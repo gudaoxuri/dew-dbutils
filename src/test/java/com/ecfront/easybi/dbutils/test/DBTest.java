@@ -1,9 +1,9 @@
 package com.ecfront.easybi.dbutils.test;
 
 import com.ecfront.easybi.dbutils.exchange.DB;
+import com.ecfront.easybi.dbutils.exchange.DS;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import junit.framework.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,14 +11,8 @@ import java.util.Map;
 
 public class DBTest {
 
-    @Before
-    public void setUp() throws Exception {
-
-    }
-
-
-    private void testCreateTable() {
-        new DB().update("create table user(" +
+    private void testCreateTable(DB db) {
+        db.update("create table user(" +
                 "id int not null," +
                 "name varchar(255)," +
                 "password varchar(255)," +
@@ -26,16 +20,15 @@ public class DBTest {
                 "asset decimal," +
                 "enable boolean," +
                 "primary key(id)" +
-                ")", null);
+                ")");
     }
 
-    private void testUpdate() throws Exception {
-        new DB().update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
+    private void testUpdate(DB db) throws Exception {
+        db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
     }
 
-
-    private void testBatch() throws Exception {
-        new DB().batch("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
+    private void testBatch(DB db) throws Exception {
+        db.batch("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
                 {2, "李四", "123", 22, 2333.22, true},
                 {3, "王五1", "123", 22, 2333.22, false},
                 {4, "王五2", "123", 22, 2333.22, false},
@@ -43,62 +36,109 @@ public class DBTest {
         });
     }
 
-    private void testCount() throws Exception {
-        long result = new DB().count("select * from user");
+    private void testCount(DB db) throws Exception {
+        long result = db.count("select * from user");
         Assert.assertEquals(result, 5);
     }
 
-    private void testGet() throws Exception {
-        Map<String, Object> result = new DB().get("select * from user where id=?", new Object[]{1});
+    private void testGet(DB db) throws Exception {
+        Map<String, Object> result = db.get("select * from user where id=?", new Object[]{1});
         Assert.assertEquals(result.get("id"), 1);
     }
 
-    private void testFind() throws Exception {
-        DB db = new DB();
-        String sql = "select * from user where age=?";
-        List<Map<String, Object>> result = db.find(sql, new Object[]{22});
-        Assert.assertEquals(db.count(sql, new Object[]{22}), 4);
+    private void testFind(DB db) throws Exception {
+        List<Map<String, Object>> result = db.find("select * from user where age=?", new Object[]{22});
+        Assert.assertEquals(result.size(), 4);
 
-        Page<Map<String, Object>> pgae= db.find(sql, null, 1, 2);
-        Assert.assertEquals(pgae.recordTotal,4);
-        Assert.assertEquals(pgae.pageTotal,3);
+        Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
+        Assert.assertEquals(page.recordTotal, 5);
+        Assert.assertEquals(page.pageTotal, 3);
 
+    }
+
+    private void testGetObject(DB db) throws Exception {
+        User user = db.getObject("select * from user where id= ? ", new Object[]{1}, User.class);
+        Assert.assertEquals(user.getId(), 1);
+    }
+
+    private void testFindObjects(DB db) throws Exception {
+        List<User> users = db.findObjects("select * from user where age=?", new Object[]{22}, User.class);
+        Assert.assertEquals(users.size(), 4);
+
+        Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
+        Assert.assertEquals(page.recordTotal, 5);
+        Assert.assertEquals(page.pageTotal, 3);
     }
 
     @Test
     public void testFlow() throws Exception {
-        testCreateTable();
-        testUpdate();
-        testBatch();
-        testGet();
-        testCount();
-        testFind();
-    }
+        DB db=new DB();
+        testCreateTable(db);
+        testUpdate(db);
+        testBatch(db);
+        testGet(db);
+        testCount(db);
+        testFind(db);
 
-
-    @Test
-    public void testGetObject() throws Exception {
-
-    }
-
-    @Test
-    public void testFindObjects() throws Exception {
-
-    }
-
-
-    @Test
-    public void testOpen() throws Exception {
-
+        testGetObject(db);
+        testFindObjects(db);
     }
 
     @Test
-    public void testCommit() throws Exception {
+      public void testTransaction() throws Exception {
+        DB db=new DB();
+        testCreateTable(db);
+        //rollback test
+        db.open();
+        testUpdate(db);
+        db.rollback();
+        Assert.assertEquals(db.count("select * from user"), 0);
+
+        //error test
+        db.open();
+        testUpdate(db);
+        //has error
+        db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
+        db.commit();
+        Assert.assertEquals(db.count("select * from user"), 0);
+
+        //commit test
+        db.open();
+        testUpdate(db);
+        db.commit();
+        Assert.assertEquals(db.count("select * from user"), 1);
 
     }
 
     @Test
-    public void testRollback() throws Exception {
+    public void testMultiDS() throws Exception {
+        DB db=new DB();
+        db.update("create table multi_ds(" +
+                "code varchar(255) not null," +
+                "driver varchar(255)," +
+                "url varchar(255)," +
+                "username varchar(255)," +
+                "password varchar(255)," +
+                "initialSize int," +
+                "maxActive int," +
+                "minIdle int," +
+                "maxIdle int," +
+                "maxWait int," +
+                "enable int," +
+                "primary key(code)" +
+                ")");
+        db.batch("insert into multi_ds (code,driver,url,username,password,initialSize,maxActive,minIdle,maxIdle,maxWait,enable) values ( ? , ? , ? , ? , ? , ?, ?, ?, ?, ?, ? )", new Object[][]{
+                {"ds1", "org.h2.Driver", "jdbc:h2:mem:db1", "sa", "", 10, 50, 5, 20, 5000, true},
+                {"ds2", "org.h2.Driver", "jdbc:h2:mem:db2", "sa", "", 10, 50, 5, 20, 5000, false}
+        });
+        Assert.assertEquals(db.count("select * from multi_ds"), 2);
 
+        DS.reload();
+        DB multiDB=new DB("ds1");
+        testCreateTable(multiDB);
+        testUpdate(multiDB);
+        Assert.assertEquals(multiDB.count("select * from user"), 1);
     }
+
+
 }

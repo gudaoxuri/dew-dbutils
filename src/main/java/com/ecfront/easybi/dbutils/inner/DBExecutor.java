@@ -51,7 +51,7 @@ public class DBExecutor {
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
-        page.recordTotal = count(pagedSql, params, conn);
+        page.recordTotal = count(pagedSql, params, conn, dialect);
         page.pageTotal = (page.recordTotal + pageSize - 1) / pageSize;
         page.objects = find(pagedSql, params, clazz, conn);
         return page;
@@ -90,25 +90,26 @@ public class DBExecutor {
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
-        page.recordTotal = count(pagedSql, params, conn);
+        page.recordTotal = count(sql, params, conn, dialect);
         page.pageTotal = (page.recordTotal + pageSize - 1) / pageSize;
         page.objects = find(pagedSql, params, conn);
         return page;
     }
 
-    public static long count(String sql, Connection conn) {
-        return count(sql, null, conn);
+    public static long count(String sql, Connection conn, Dialect dialect) {
+        return count(sql, null, conn, dialect);
     }
 
-    public static long count(String sql, Object[] params, Connection conn) {
+    public static long count(String sql, Object[] params, Connection conn, Dialect dialect) {
+        String countSql = dialect.count(sql);
         try {
             if (null == params) {
-                return (Integer) queryRunner.query(conn, sql, scalarHandler);
+                return (Long) queryRunner.query(conn, countSql, scalarHandler);
             } else {
-                return (Integer) queryRunner.query(conn, sql, scalarHandler, params);
+                return (Long) queryRunner.query(conn, countSql, scalarHandler, params);
             }
         } catch (SQLException e) {
-            logger.error("Count error : " + sql, e);
+            logger.error("Count error : " + countSql, e);
         }
         return -1;
     }
@@ -121,6 +122,11 @@ public class DBExecutor {
                 queryRunner.update(conn, sql, params);
             }
         } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Connection error : " + sql, e1);
+            }
             logger.error("Update error : " + sql, e);
         }
     }
@@ -129,7 +135,11 @@ public class DBExecutor {
         try {
             queryRunner.batch(conn, sql, params);
         } catch (SQLException e) {
-            e.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Connection error : " + sql, e1);
+            }
             logger.error("Batch error : " + sql, e);
         }
     }

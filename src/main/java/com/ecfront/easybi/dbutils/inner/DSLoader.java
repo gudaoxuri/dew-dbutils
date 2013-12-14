@@ -45,18 +45,18 @@ public class DSLoader {
             for (Map<String, Object> res : result) {
                 if (null != res) {
                     BasicDataSource ds = new BasicDataSource();
-                    ds.setUrl(res.get(ConfigContainer.FLAG_URL).toString());
-                    ds.setDriverClassName(res.get(ConfigContainer.FLAG_DRIVER).toString());
-                    ds.setUsername(res.get(ConfigContainer.FLAG_USERNAME).toString());
-                    ds.setPassword(res.get(ConfigContainer.FLAG_PASSWORD).toString());
+                    ds.setUrl(res.get(ConfigContainer.FLAG_URL.toUpperCase()).toString());
+                    ds.setDriverClassName(res.get(ConfigContainer.FLAG_DRIVER.toUpperCase()).toString());
+                    ds.setUsername(res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()).toString());
+                    ds.setPassword(res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()).toString());
                     ds.setDefaultAutoCommit(true);
-                    ds.setInitialSize(Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE).toString()));
-                    ds.setMaxActive(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE).toString()));
-                    ds.setMinIdle(Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE).toString()));
-                    ds.setMaxIdle(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE).toString()));
-                    ds.setMaxWait(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT).toString()));
-                    MULTI_DS.put(res.get(ConfigContainer.FLAG_CODE).toString(), ds);
-                    MULTI_DB_DIALECT.put(res.get(ConfigContainer.FLAG_CODE).toString(), parseDialect(res.get(ConfigContainer.FLAG_DRIVER).toString()));
+                    ds.setInitialSize(Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()).toString()));
+                    ds.setMaxActive(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()).toString()));
+                    ds.setMinIdle(Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()).toString()));
+                    ds.setMaxIdle(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()).toString()));
+                    ds.setMaxWait(Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()).toString()));
+                    MULTI_DS.put(res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString(), ds);
+                    MULTI_DB_DIALECT.put(res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString(), parseDialect(res.get(ConfigContainer.FLAG_URL).toString()));
                 }
             }
         }
@@ -85,10 +85,11 @@ public class DSLoader {
                 return new OracleDialect();
             } else if ("mysql".equalsIgnoreCase(type)) {
                 return new MySQLDialect();
-            }  else if ("h2".equalsIgnoreCase(type)) {
+            } else if ("h2".equalsIgnoreCase(type)) {
                 return new H2Dialect();
             }
         }
+        logger.error("Parse dialect error : " + driver);
         return null;
     }
 
