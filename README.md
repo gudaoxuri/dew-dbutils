@@ -3,6 +3,7 @@
 ### How to use
 
 Add the following configuration in the properties file  :
+
     #Support multiple data sources
     ez_multi_ds_support=true
     #Multiple data source configuration items to obtain SQL, Must return the following fields
@@ -20,18 +21,22 @@ Add the following configuration in the properties file  :
     ez_db_jdbc_password=oracle
 
 Reload configuration when data source configuration changes :
-`DS.reload()`
+
+    DS.reload()
 
 Transaction support :
+
     DB db=new DB();
     db.open();
      //do something.
     db.commit();
 
 Paging support :
+
 `Page<Map<String, Object>> page = db.find("<SQL>","<param>"，<page number, starting with 1>, <page size>);`
 
 Java Object package support :
+
 `User user = db.getObject("select * from user where id= ? ", new Object[]{1}, User.class);`
 
 ### Building from source
