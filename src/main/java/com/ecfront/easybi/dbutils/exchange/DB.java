@@ -9,85 +9,204 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <h1>数据操作类</h1>
+ */
 public class DB {
 
+    /**
+     * 获取单个对象
+     * @param sql    SQL
+     * @param clazz  对象类
+     * @return java对象
+     */
     public <E> E getObject(String sql, Class<E> clazz) {
         return DBExecutor.get(sql, null, clazz, getConnection(dsCode));
     }
 
+    /**
+     * 获取单个对象
+     * @param sql    SQL
+     * @param params    参数
+     * @param clazz  对象类
+     * @return java对象
+     */
     public <E> E getObject(String sql, Object[] params, Class<E> clazz) {
         return DBExecutor.get(sql, params, clazz, getConnection(dsCode));
     }
 
+    /**
+     * 获取多个对象
+     * @param sql    SQL
+     * @param clazz  对象类
+     * @return java对象
+     */
     public <E> List<E> findObjects(String sql, Class<E> clazz) {
         return DBExecutor.find(sql, null, clazz, getConnection(dsCode));
     }
 
+    /**
+     * 获取多个对象
+     * @param sql    SQL
+     * @param params    参数
+     * @param clazz  对象类
+     * @return java对象
+     */
     public <E> List<E> findObjects(String sql, Object[] params, Class<E> clazz) {
         return DBExecutor.find(sql, params, clazz, getConnection(dsCode));
     }
 
+    /**
+     *   获取多个对象（带分页）
+     * @param sql   SQL
+     * @param pageNumber 页码（从1开始）
+     * @param pageSize 每页条数
+     * @param clazz   对象类
+     * @return    多个对象（带分页）
+     */
     public <E> Page<E> findObjects(String sql, long pageNumber, long pageSize, Class<E> clazz) {
         return DBExecutor.find(sql, null, pageNumber, pageSize, clazz, getConnection(dsCode), getDialect(dsCode));
     }
 
+    /**
+     *   获取多个对象（带分页）
+     * @param sql   SQL
+     * @param params    参数
+     * @param pageNumber 页码（从1开始）
+     * @param pageSize 每页条数
+     * @param clazz   对象类
+     * @return    多个对象（带分页）
+     */
     public <E> Page<E> findObjects(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz) {
         return DBExecutor.find(sql, params, pageNumber, pageSize, clazz, getConnection(dsCode), getDialect(dsCode));
     }
 
+    /**
+     * 获取单条记录
+     * @param sql    SQL
+     * @return 单条记录
+     */
     public Map<String, Object> get(String sql) {
         return DBExecutor.get(sql, null, getConnection(dsCode));
     }
 
+    /**
+     * 获取单条记录
+     * @param sql    SQL
+     * @param params    参数
+     * @return 单条记录
+     */
     public Map<String, Object> get(String sql, Object[] params) {
         return DBExecutor.get(sql, params, getConnection(dsCode));
     }
 
+
+    /**
+     *   获取多条记录（带分页）
+     * @param sql   SQL
+     * @return    多条记录（带分页）
+     */
     public List<Map<String, Object>> find(String sql) {
         return DBExecutor.find(sql, null, getConnection(dsCode));
     }
 
+    /**
+     *   获取多条记录（带分页）
+     * @param sql   SQL
+     * @param params    参数
+     * @return    多条记录（带分页）
+     */
     public List<Map<String, Object>> find(String sql, Object[] params) {
         return DBExecutor.find(sql, params, getConnection(dsCode));
     }
 
+    /**
+     *   获取多条记录（带分页）
+     * @param sql   SQL
+     * @param pageNumber 页码（从1开始）
+     * @param pageSize 每页条数
+     * @return    多条记录（带分页）
+     */
     public Page<Map<String, Object>> find(String sql, int pageNumber, int pageSize) {
         return DBExecutor.find(sql, null, pageNumber, pageSize, getConnection(dsCode), getDialect(dsCode));
     }
 
+
+    /**
+     *   获取多条记录（带分页）
+     * @param sql   SQL
+     * @param params    参数
+     * @param pageNumber 页码（从1开始）
+     * @param pageSize 每页条数
+     * @return    多条记录（带分页）
+     */
     public Page<Map<String, Object>> find(String sql, Object[] params, int pageNumber, int pageSize) {
         return DBExecutor.find(sql, params, pageNumber, pageSize, getConnection(dsCode), getDialect(dsCode));
     }
 
+    /**
+     * 获取记录数
+     * @param sql SQL
+     * @return  记录数
+     */
     public long count(String sql) {
         return DBExecutor.count(sql, getConnection(dsCode), getDialect(dsCode));
     }
 
+    /**
+     * 获取记录数
+     * @param sql SQL
+     * @param params    参数
+     * @return  记录数
+     */
     public long count(String sql, Object[] params) {
         return DBExecutor.count(sql, params, getConnection(dsCode), getDialect(dsCode));
     }
 
+    /**
+     * 更新记录
+     * @param sql  SQL
+     */
     public void update(String sql) {
         DBExecutor.update(sql, null, getConnection(dsCode));
     }
 
+    /**
+     * 更新记录
+     * @param sql  SQL
+     * @param params    参数
+     */
     public void update(String sql, Object[] params) {
         DBExecutor.update(sql, params, getConnection(dsCode));
     }
 
+    /**
+     * 批量更新记录
+     * @param sql  SQL
+     * @param params    参数
+     */
     public void batch(String sql, Object[][] params) {
         DBExecutor.batch(sql, params, getConnection(dsCode));
     }
 
+    /**
+     * 打开事务
+     */
     public void open() {
         connection = Transaction.open(dsCode);
     }
 
+    /**
+     * 提交事务
+     */
     public void commit() {
         Transaction.commit();
         connection=null;
     }
 
+    /**
+     * 显示回滚事务（发生SQL错误时会自动回滚，但业务错误需要调用此方法手工回滚）
+     */
     public void rollback() {
         Transaction.rollback();
         connection=null;
