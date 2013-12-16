@@ -40,7 +40,12 @@ public class DSLoader {
     }
 
     private static void loadMultiDS() {
-        List<Map<String, Object>> result = DBExecutor.find(ConfigContainer.MULTI_DS_QUERY, null, getConnection(null));
+        List<Map<String, Object>> result=null;
+        try{
+            result= DBExecutor.find(ConfigContainer.MULTI_DS_QUERY, null, getConnection(null));
+        }catch (Exception e){
+            logger.error("Multi DS load error : "+e);
+        }
         if (null != result) {
             for (Map<String, Object> res : result) {
                 if (null != res) {
