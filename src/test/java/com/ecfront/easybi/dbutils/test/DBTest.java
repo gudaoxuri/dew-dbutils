@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class DBTest {
 
-    private void testDropTable(DB db){
+    private void testDropTable(DB db) {
         db.update("drop table user");
     }
 
@@ -75,8 +75,18 @@ public class DBTest {
     }
 
     @Test
+    public void testDBCP() throws Exception {
+        DB db = new DB();
+        testCreateTable(db);
+        testUpdate(db);
+        for (int i = 0; i < 11; i++) {
+            testGetObject(db);
+        }
+    }
+
+    @Test
     public void testFlow() throws Exception {
-        DB db=new DB();
+        DB db = new DB();
         testCreateTable(db);
         testUpdate(db);
         testBatch(db);
@@ -89,8 +99,8 @@ public class DBTest {
     }
 
     @Test
-      public void testTransaction() throws Exception {
-        DB db=new DB();
+    public void testTransaction() throws Exception {
+        DB db = new DB();
         testDropTable(db);
         testCreateTable(db);
         //rollback test
@@ -99,13 +109,13 @@ public class DBTest {
         db.rollback();
         Assert.assertEquals(db.count("select * from user"), 0);
 
-      /*  //error test
+        //error test
         db.open();
         testUpdate(db);
         //has error
         db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
         db.commit();
-        Assert.assertEquals(db.count("select * from user"), 0);*/
+        Assert.assertEquals(db.count("select * from user"), 0);
 
         //commit test
         db.open();
@@ -117,7 +127,7 @@ public class DBTest {
 
     @Test
     public void testMultiDS() throws Exception {
-        DB db=new DB();
+        DB db = new DB();
         db.update("create table multi_ds(" +
                 "code varchar(255) not null," +
                 "driver varchar(255)," +
@@ -139,7 +149,7 @@ public class DBTest {
         Assert.assertEquals(db.count("select * from multi_ds"), 2);
 
         DS.reload();
-        DB multiDB=new DB("ds1");
+        DB multiDB = new DB("ds1");
         testCreateTable(multiDB);
         testUpdate(multiDB);
         Assert.assertEquals(multiDB.count("select * from user"), 1);
