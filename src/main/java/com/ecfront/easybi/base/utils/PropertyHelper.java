@@ -2,7 +2,6 @@ package com.ecfront.easybi.base.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,33 +22,38 @@ public class PropertyHelper {
 
     public static String get(String name) {
         if (null == properties) {
-            try {
-                loadProperties();
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (PropertyHelper.class) {
+                if (null == properties) {
+                    try {
+                        properties = new HashMap<String, String>();
+                        loadProperties(PropertyHelper.class.getResource("/").getPath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         return properties.containsKey(name) ? properties.get(name) : null;
     }
 
-    private static void loadProperties() throws IOException {
-        properties = new HashMap<String, String>();
+    private static void loadProperties(String path) throws IOException {
+        File[] files = new File(path).listFiles();
+        for (File file : files) {
+            if (file.getName().endsWith("properties")) {
+                loadProperties(file);
+            } else if (file.isDirectory()) {
+                loadProperties(file.getPath());
+            }
+        }
+    }
+
+    private static void loadProperties(File file) throws IOException {
         Properties prop = new Properties();
-        File[] files = new File(PropertyHelper.class.getResource("/").getPath()).listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return s.endsWith("properties");
-            }
-        });
-        if (null != files && files.length > 0) {
-            String key;
-            for (File file : files) {
-                prop.load(new FileInputStream(file));
-                for (Iterator it = prop.keySet().iterator(); it.hasNext(); ) {
-                    key = (String) it.next();
-                    properties.put(key, (String) prop.get(key));
-                }
-            }
+        prop.load(new FileInputStream(file));
+        String key;
+        for (Iterator it = prop.keySet().iterator(); it.hasNext(); ) {
+            key = (String) it.next();
+            properties.put(key.trim(), ((String) prop.get(key)).trim());
         }
     }
 }
