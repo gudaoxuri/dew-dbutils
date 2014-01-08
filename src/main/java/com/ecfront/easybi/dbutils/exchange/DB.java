@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class DB {
      * @param clazz 对象类
      * @return java对象
      */
-    public <E> E getObject(String sql, Class<E> clazz) {
+    public <E> E getObject(String sql, Class<E> clazz) throws SQLException {
         return DBExecutor.get(sql, null, clazz, getConnection(dsCode), isCloseConnection());
     }
 
@@ -35,7 +36,7 @@ public class DB {
      * @param clazz  对象类
      * @return java对象
      */
-    public <E> E getObject(String sql, Object[] params, Class<E> clazz) {
+    public <E> E getObject(String sql, Object[] params, Class<E> clazz) throws SQLException {
         return DBExecutor.get(sql, params, clazz, getConnection(dsCode), isCloseConnection());
     }
 
@@ -46,7 +47,7 @@ public class DB {
      * @param clazz 对象类
      * @return java对象
      */
-    public <E> List<E> findObjects(String sql, Class<E> clazz) {
+    public <E> List<E> findObjects(String sql, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, null, clazz, getConnection(dsCode), isCloseConnection());
     }
 
@@ -58,7 +59,7 @@ public class DB {
      * @param clazz  对象类
      * @return java对象
      */
-    public <E> List<E> findObjects(String sql, Object[] params, Class<E> clazz) {
+    public <E> List<E> findObjects(String sql, Object[] params, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, params, clazz, getConnection(dsCode), isCloseConnection());
     }
 
@@ -71,7 +72,7 @@ public class DB {
      * @param clazz      对象类
      * @return 多个对象（带分页）
      */
-    public <E> Page<E> findObjects(String sql, long pageNumber, long pageSize, Class<E> clazz) {
+    public <E> Page<E> findObjects(String sql, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, null, pageNumber, pageSize, clazz, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -85,7 +86,7 @@ public class DB {
      * @param clazz      对象类
      * @return 多个对象（带分页）
      */
-    public <E> Page<E> findObjects(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz) {
+    public <E> Page<E> findObjects(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, params, pageNumber, pageSize, clazz, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -95,7 +96,7 @@ public class DB {
      * @param sql SQL
      * @return 单条记录
      */
-    public Map<String, Object> get(String sql) {
+    public Map<String, Object> get(String sql) throws SQLException {
         return DBExecutor.get(sql, null, getConnection(dsCode), isCloseConnection());
     }
 
@@ -106,7 +107,7 @@ public class DB {
      * @param params 参数
      * @return 单条记录
      */
-    public Map<String, Object> get(String sql, Object[] params) {
+    public Map<String, Object> get(String sql, Object[] params) throws SQLException {
         return DBExecutor.get(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
@@ -117,7 +118,7 @@ public class DB {
      * @param sql SQL
      * @return 多条记录（带分页）
      */
-    public List<Map<String, Object>> find(String sql) {
+    public List<Map<String, Object>> find(String sql) throws SQLException {
         return DBExecutor.find(sql, null, getConnection(dsCode), isCloseConnection());
     }
 
@@ -128,7 +129,7 @@ public class DB {
      * @param params 参数
      * @return 多条记录（带分页）
      */
-    public List<Map<String, Object>> find(String sql, Object[] params) {
+    public List<Map<String, Object>> find(String sql, Object[] params) throws SQLException {
         return DBExecutor.find(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
@@ -140,7 +141,7 @@ public class DB {
      * @param pageSize   每页条数
      * @return 多条记录（带分页）
      */
-    public Page<Map<String, Object>> find(String sql, int pageNumber, int pageSize) {
+    public Page<Map<String, Object>> find(String sql, int pageNumber, int pageSize) throws SQLException {
         return DBExecutor.find(sql, null, pageNumber, pageSize, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -154,7 +155,7 @@ public class DB {
      * @param pageSize   每页条数
      * @return 多条记录（带分页）
      */
-    public Page<Map<String, Object>> find(String sql, Object[] params, int pageNumber, int pageSize) {
+    public Page<Map<String, Object>> find(String sql, Object[] params, int pageNumber, int pageSize) throws SQLException {
         return DBExecutor.find(sql, params, pageNumber, pageSize, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -164,7 +165,7 @@ public class DB {
      * @param sql SQL
      * @return 记录数
      */
-    public long count(String sql) {
+    public long count(String sql) throws SQLException {
         return DBExecutor.count(sql, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -175,7 +176,7 @@ public class DB {
      * @param params 参数
      * @return 记录数
      */
-    public long count(String sql, Object[] params) {
+    public long count(String sql, Object[] params) throws SQLException {
         return DBExecutor.count(sql, params, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
     }
 
@@ -184,8 +185,8 @@ public class DB {
      *
      * @param sql SQL
      */
-    public void update(String sql) {
-        DBExecutor.update(sql, null, getConnection(dsCode), isCloseConnection());
+    public int update(String sql) throws SQLException {
+        return DBExecutor.update(sql, null, getConnection(dsCode), isCloseConnection());
     }
 
     /**
@@ -194,8 +195,8 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      */
-    public void update(String sql, Object[] params) {
-        DBExecutor.update(sql, params, getConnection(dsCode), isCloseConnection());
+    public int update(String sql, Object[] params) throws SQLException {
+        return DBExecutor.update(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
     /**
@@ -204,8 +205,8 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      */
-    public void batch(String sql, Object[][] params) {
-        DBExecutor.batch(sql, params, getConnection(dsCode), isCloseConnection());
+    public int[] batch(String sql, Object[][] params) throws SQLException {
+        return DBExecutor.batch(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
     /**

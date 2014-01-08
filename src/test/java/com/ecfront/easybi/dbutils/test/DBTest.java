@@ -6,16 +6,17 @@ import com.ecfront.easybi.dbutils.exchange.Page;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 public class DBTest {
 
-    private void testDropTable(DB db) {
+    private void testDropTable(DB db) throws SQLException {
         db.update("drop table user");
     }
 
-    private void testCreateTable(DB db) {
+    private void testCreateTable(DB db) throws SQLException {
         db.update("create table user(" +
                 "id int not null," +
                 "name varchar(255)," +
@@ -53,7 +54,6 @@ public class DBTest {
     private void testFind(DB db) throws Exception {
         List<Map<String, Object>> result = db.find("select * from user where age=?", new Object[]{22});
         Assert.assertEquals(result.size(), 4);
-
         Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
         Assert.assertEquals(page.recordTotal, 5);
         Assert.assertEquals(page.pageTotal, 3);
