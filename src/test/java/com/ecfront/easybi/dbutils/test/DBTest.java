@@ -5,6 +5,8 @@ import com.ecfront.easybi.dbutils.exchange.DS;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import junit.framework.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -28,11 +30,11 @@ public class DBTest {
                 ")");
     }
 
-    private void testUpdate(DB db) throws Exception {
+    private void testUpdate(DB db) throws SQLException {
         db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
     }
 
-    private void testBatch(DB db) throws Exception {
+    private void testBatch(DB db) throws SQLException {
         db.batch("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
                 {2, "李四", "123", 22, 2333.22, true},
                 {3, "王五1", "123", 22, 2333.22, false},
@@ -41,17 +43,17 @@ public class DBTest {
         });
     }
 
-    private void testCount(DB db) throws Exception {
+    private void testCount(DB db) throws SQLException {
         long result = db.count("select * from user");
         Assert.assertEquals(result, 5);
     }
 
-    private void testGet(DB db) throws Exception {
+    private void testGet(DB db) throws SQLException {
         Map<String, Object> result = db.get("select * from user where id=?", new Object[]{1});
         Assert.assertEquals(result.get("id"), 1);
     }
 
-    private void testFind(DB db) throws Exception {
+    private void testFind(DB db) throws SQLException {
         List<Map<String, Object>> result = db.find("select * from user where age=?", new Object[]{22});
         Assert.assertEquals(result.size(), 4);
         Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
@@ -60,12 +62,12 @@ public class DBTest {
 
     }
 
-    private void testGetObject(DB db) throws Exception {
+    private void testGetObject(DB db) throws SQLException {
         User user = db.getObject("select * from user where id= ? ", new Object[]{1}, User.class);
         Assert.assertEquals(user.getId(), 1);
     }
 
-    private void testFindObjects(DB db) throws Exception {
+    private void testFindObjects(DB db) throws SQLException {
         List<User> users = db.findObjects("select * from user where age=?", new Object[]{22}, User.class);
         Assert.assertEquals(users.size(), 4);
 
@@ -82,10 +84,11 @@ public class DBTest {
         for (int i = 0; i < 11; i++) {
             testGetObject(db);
         }
+        testDropTable(db);
     }
 
     @Test
-    public void testFlow() throws Exception {
+    public void testFlow() throws SQLException {
         DB db = new DB();
         testCreateTable(db);
         testUpdate(db);
@@ -96,12 +99,13 @@ public class DBTest {
 
         testGetObject(db);
         testFindObjects(db);
+
+        testDropTable(db);
     }
 
     @Test
-    public void testTransaction() throws Exception {
+    public void testTransaction() throws SQLException {
         DB db = new DB();
-        testDropTable(db);
         testCreateTable(db);
         //rollback test
         db.open();
@@ -113,8 +117,12 @@ public class DBTest {
         db.open();
         testUpdate(db);
         //has error
-        db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
-        db.commit();
+        try {
+            db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
+            db.commit();
+        } catch (SQLException e) {
+            logger.warn("Has Error!");
+        }
         Assert.assertEquals(db.count("select * from user"), 0);
 
         //commit test
@@ -123,9 +131,9 @@ public class DBTest {
         db.commit();
         Assert.assertEquals(db.count("select * from user"), 1);
 
+        testDropTable(db);
     }
 
-    @Test
     public void testMultiDS() throws Exception {
         DB db = new DB();
         db.update("create table multi_ds(" +
@@ -155,5 +163,6 @@ public class DBTest {
         Assert.assertEquals(multiDB.count("select * from user"), 1);
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(DBTest.class);
 
 }
