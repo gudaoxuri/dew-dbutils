@@ -2,6 +2,7 @@ package com.ecfront.easybi.dbutils.test;
 
 import com.ecfront.easybi.dbutils.exchange.DB;
 import com.ecfront.easybi.dbutils.exchange.DS;
+import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -74,6 +75,14 @@ public class DBTest {
         Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
         Assert.assertEquals(page.recordTotal, 5);
         Assert.assertEquals(page.pageTotal, 3);
+    }
+
+    @Test
+    public void testMeta() throws Exception {
+        DB db = new DB();
+        testCreateTable(db);
+        List<Meta> meta = db.getMetaData("select * from user where 1=2");
+        testDropTable(db);
     }
 
     @Test

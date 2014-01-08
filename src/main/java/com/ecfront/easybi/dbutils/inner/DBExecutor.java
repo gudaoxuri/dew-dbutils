@@ -1,5 +1,6 @@
 package com.ecfront.easybi.dbutils.inner;
 
+import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
 import org.apache.commons.dbutils.QueryRunner;
@@ -8,9 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -177,6 +177,32 @@ public class DBExecutor {
             if (isCloseConn) {
                 closeConnection(conn);
             }
+        }
+    }
+
+    public static List<Meta> getMetaData(String sql, Connection conn) throws SQLException {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement(sql);
+            rs = st.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+            List<Meta> metas = new ArrayList<Meta>();
+            for (int i = 1; i <= meta.getColumnCount(); i++) {
+                metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i), meta.getColumnLabel(i)));
+            }
+            return metas;
+        } catch (SQLException e) {
+            logger.error("getResultSet error : " + sql, e);
+            throw e;
+        } finally {
+            if (null != rs) {
+                rs.close();
+            }
+            if (null != st) {
+                st.close();
+            }
+            closeConnection(conn);
         }
     }
 
