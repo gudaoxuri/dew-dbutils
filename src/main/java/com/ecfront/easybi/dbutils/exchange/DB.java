@@ -209,8 +209,8 @@ public class DB {
         return DBExecutor.batch(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
-    public List<Meta> getMetaData(String sql) throws SQLException {
-        return DBExecutor.getMetaData(sql,getConnection(dsCode));
+    public List<Meta> getMetaData(String tableName) throws SQLException {
+        return DBExecutor.getMetaData(tableName,getConnection(dsCode));
     }
 
     /**

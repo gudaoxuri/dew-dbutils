@@ -81,7 +81,7 @@ public class DBTest {
     public void testMeta() throws Exception {
         DB db = new DB();
         testCreateTable(db);
-        List<Meta> meta = db.getMetaData("select * from user where 1=2");
+        List<Meta> meta = db.getMetaData("user");
         testDropTable(db);
     }
 

@@ -5,11 +5,11 @@ public class Meta {
 
     public int type;
     public String code;
-    public String lable;
+    public String label;
 
-    public Meta(int type, String code, String lable) {
+    public Meta(int type, String code, String label) {
         this.type = type;
         this.code = code;
-        this.lable = lable;
+        this.label = label;
     }
 }

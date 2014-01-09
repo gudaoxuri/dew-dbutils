@@ -180,11 +180,11 @@ public class DBExecutor {
         }
     }
 
-    public static List<Meta> getMetaData(String sql, Connection conn) throws SQLException {
+    public static List<Meta> getMetaData(String tableName, Connection conn) throws SQLException {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement(sql);
+            st = conn.prepareStatement("select * from "+ tableName+" where 1=2");
             rs = st.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             List<Meta> metas = new ArrayList<Meta>();
@@ -193,7 +193,7 @@ public class DBExecutor {
             }
             return metas;
         } catch (SQLException e) {
-            logger.error("getResultSet error : " + sql, e);
+            logger.error("getResultSet error : " + tableName, e);
             throw e;
         } finally {
             if (null != rs) {
