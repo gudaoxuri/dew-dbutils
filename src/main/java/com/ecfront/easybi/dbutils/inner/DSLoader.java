@@ -21,6 +21,9 @@ public class DSLoader {
     private static final Map<String, Dialect> MULTI_DB_DIALECT = new HashMap<String, Dialect>();
 
     public static void reload() {
+        MULTI_DS.clear();
+        MULTI_DB_DIALECT.clear();
+        loadMainDS();
         if (ConfigContainer.IS_MULTI_DS_SUPPORT) {
             loadMultiDS();
         }
@@ -101,10 +104,7 @@ public class DSLoader {
     private static final Logger logger = LoggerFactory.getLogger(DSLoader.class);
 
     static {
-        loadMainDS();
-        if (ConfigContainer.IS_MULTI_DS_SUPPORT) {
-            loadMultiDS();
-        }
+        reload();
     }
 
 
