@@ -213,6 +213,10 @@ public class DB {
         return DBExecutor.getMetaData(tableName,getConnection(dsCode));
     }
 
+    public Meta getMetaData(String tableName,String fieldName) throws SQLException {
+        return DBExecutor.getMetaData(tableName, fieldName, getConnection(dsCode));
+    }
+
     /**
      * 打开事务
      */

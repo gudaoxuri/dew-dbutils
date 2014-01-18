@@ -181,14 +181,29 @@ public class DBExecutor {
     }
 
     public static List<Meta> getMetaData(String tableName, Connection conn) throws SQLException {
+       return findMetaData(tableName, null, conn);
+    }
+
+    public static Meta getMetaData(String tableName, String fieldName, Connection conn) throws SQLException {
+        List<Meta> metas=findMetaData(tableName,fieldName, conn);
+        if(null!=metas&&metas.size()==1){
+            return metas.get(0);
+        }
+        return null;
+    }
+
+    private static List<Meta> findMetaData(String tableName, String fieldName,Connection conn) throws SQLException {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("select * from "+ tableName+" where 1=2");
+            st = conn.prepareStatement("select * from " + tableName + " where 1=2");
             rs = st.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             List<Meta> metas = new ArrayList<Meta>();
             for (int i = 1; i <= meta.getColumnCount(); i++) {
+                if(null!=fieldName&& !meta.getColumnLabel(i).equalsIgnoreCase(fieldName)) {
+                    continue;
+                }
                 metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i), meta.getColumnLabel(i)));
             }
             return metas;

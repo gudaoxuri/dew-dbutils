@@ -81,7 +81,10 @@ public class DBTest {
     public void testMeta() throws Exception {
         DB db = new DB();
         testCreateTable(db);
-        List<Meta> meta = db.getMetaData("user");
+        List<Meta> metas = db.getMetaData("user");
+        Assert.assertEquals(metas.get(0).label, "ID");
+        Meta meta=db.getMetaData("user","name") ;
+        Assert.assertEquals(meta.label,"NAME");
         testDropTable(db);
     }
 
