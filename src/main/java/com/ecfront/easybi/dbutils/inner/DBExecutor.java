@@ -8,6 +8,7 @@ import org.apache.commons.dbutils.handlers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public class DBExecutor {
     public static <E> E get(String sql, Object[] params, Class<E> clazz, Connection conn, boolean isCloseConn) throws SQLException {
         E object = null;
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             if (params == null) {
                 object = (E) queryRunner.query(conn, sql, new BeanHandler(clazz));
             } else {
@@ -40,6 +44,9 @@ public class DBExecutor {
     public static <E> List<E> find(String sql, Object[] params, Class<E> clazz, Connection conn, boolean isCloseConn) throws SQLException {
         List<E> list = null;
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             if (null == params) {
                 list = (List<E>) queryRunner.query(conn, sql, new BeanListHandler(clazz));
             } else {
@@ -70,6 +77,9 @@ public class DBExecutor {
     public static Map<String, Object> get(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
         Map<String, Object> map = null;
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             if (null == params) {
                 map = queryRunner.query(conn, sql, new MapHandler());
             } else {
@@ -89,6 +99,9 @@ public class DBExecutor {
     public static List<Map<String, Object>> find(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
         List<Map<String, Object>> list = null;
         try {
+            if(conn.isClosed()){
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             if (null == params) {
                 list = queryRunner.query(conn, sql, new MapListHandler());
             } else {
@@ -123,10 +136,21 @@ public class DBExecutor {
     public static long count(String sql, Object[] params, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
         String countSql = dialect.count(sql);
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
+            Object count;
             if (null == params) {
-                return (Long) queryRunner.query(conn, countSql, scalarHandler);
+                count = queryRunner.query(conn, countSql, scalarHandler);
             } else {
-                return (Long) queryRunner.query(conn, countSql, scalarHandler, params);
+                count = queryRunner.query(conn, countSql, scalarHandler, params);
+            }
+            if (count instanceof BigDecimal) {
+                return ((BigDecimal) count).longValue();
+            } else if (count instanceof Long) {
+                return (Long) count;
+            } else {
+                return ((Number) count).longValue();
             }
         } catch (SQLException e) {
             logger.error("Count error : " + countSql, e);
@@ -140,6 +164,9 @@ public class DBExecutor {
 
     public static int update(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             if (null == params) {
                 return queryRunner.update(conn, sql);
             } else {
@@ -163,6 +190,9 @@ public class DBExecutor {
 
     public static int[] batch(String sql, Object[][] params, Connection conn, boolean isCloseConn) throws SQLException {
         try {
+            if (conn.isClosed()) {
+                logger.error("Connection is Closed:" + conn.toString());
+            }
             return queryRunner.batch(conn, sql, params);
         } catch (SQLException e) {
             try {
@@ -224,6 +254,7 @@ public class DBExecutor {
     private static void closeConnection(Connection conn) throws SQLException {
         if (null != conn) {
             try {
+                logger.debug("Close connection:" + conn.toString());
                 conn.close();
             } catch (SQLException e) {
                 logger.error("Close transactionConnection error : ", e);

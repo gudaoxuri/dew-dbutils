@@ -15,6 +15,11 @@ public class ConfigContainer {
     public static final String FLAG_MIN_IDLE = "minIdle";
     public static final String FLAG_MAX_IDLE = "maxIdle";
     public static final String FLAG_MAX_WAIT = "maxWait";
+    public static final String FLAG_DEFAULT_AUTO_COMMIT="autoCommit";
+    public static final String FLAG_REMOVE_ABANDONED="rmAbandoned";
+    public static final String FLAG_REMOVE_ABANDONED_TIMEOUT="rmAbandonedTimeout";
+    public static final String FLAG_TIME_BETWEEN_EVICTION_RUMS="betweenEvictionRuns";
+    public static final String FLAG_MIN_EVICTABLE_IDLE_TIME="minEvictableIdle";
 
 
     public static Boolean IS_MULTI_DS_SUPPORT;
@@ -28,6 +33,11 @@ public class ConfigContainer {
     public static int DB_POOL_MIN_IDLE;
     public static int DB_POOL_MAX_IDLE;
     public static int DB_POOL_MAX_WAIT;
+    public static boolean DB_POOL_DEFAULT_AUTO_COMMIT;
+    public static boolean DB_POOL_REMOVE_ABANDONED;
+    public static int DB_POOL_REMOVE_ABANDONED_TIMEOUT;
+    public static int DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
+    public static int DB_POOL_MIN_EVICTABLE_IDLE_TIME;
 
     static {
         String temp = PropertyHelper.get("ez_multi_ds_support");
@@ -42,6 +52,12 @@ public class ConfigContainer {
         DB_POOL_MIN_IDLE = null != PropertyHelper.get("ez_db_pool_minIdle") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_minIdle")) : 5;
         DB_POOL_MAX_IDLE = null != PropertyHelper.get("ez_db_pool_maxIdle") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_maxIdle")) : 20;
         DB_POOL_MAX_WAIT = null != PropertyHelper.get("ez_db_pool_maxWait") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_maxWait")) : 6000;
+        DB_POOL_DEFAULT_AUTO_COMMIT = null != PropertyHelper.get("ez_db_pool_defaultAutoCommit") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_defaultAutoCommit")) : true;
+        DB_POOL_REMOVE_ABANDONED = null != PropertyHelper.get("ez_db_pool_removeAbandoned") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_removeAbandoned")) : true;
+        DB_POOL_REMOVE_ABANDONED_TIMEOUT = null != PropertyHelper.get("ez_db_pool_removeAbandonedTimeoutMillis") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_removeAbandonedTimeoutMillis")) : 180;
+        DB_POOL_TIME_BETWEEN_EVICTION_RUMS = null != PropertyHelper.get("ez_db_pool_timeBetweenEvictionRunsMillis") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_timeBetweenEvictionRunsMillis")) : 3600000;
+        DB_POOL_MIN_EVICTABLE_IDLE_TIME = null != PropertyHelper.get("ez_db_pool_minEvictableIdleTimeMillis") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_minEvictableIdleTimeMillis")) : 3600000;
+
     }
 
 }

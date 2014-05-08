@@ -89,7 +89,7 @@ public class DBTest {
     }
 
     @Test
-    public void testDBCP() throws Exception {
+    public void testPool() throws Exception {
         DB db = new DB();
         testCreateTable(db);
         testUpdate(db);
