@@ -7,13 +7,19 @@ Add the following configuration in the properties file  :
     #Support multiple data sources
     ez_multi_ds_support=true
     #Multiple data source configuration items to obtain SQL, Must return the following fields
-    ez_multi_ds_query=select code,driver,url,username,password,initialSize,maxActive,minIdle,maxIdle,maxWait from multi_ds where enable=1
+    ez_multi_ds_query=select code,driver,url,username,password,initialSize,maxActive,minIdle,maxIdle,maxWait,autoCommit,rmAbandoned,rmAbandonedTimeout,betweenEvictionRuns,minEvictableIdle from multi_ds where enable=1
 
+    #db settings
     ez_db_pool_initialSize=10
     ez_db_pool_maxActive=50
     ez_db_pool_minIdle=5
     ez_db_pool_maxIdle=20
     ez_db_pool_maxWait=60000
+    ez_db_pool_defaultAutoCommit=true
+    ez_db_pool_removeAbandoned=true
+    ez_db_pool_removeAbandonedTimeoutMillis=180
+    ez_db_pool_timeBetweenEvictionRunsMillis=3600000
+    ez_db_pool_minEvictableIdleTimeMillis=3600000
 
     ez_db_jdbc_driver=oracle.jdbc.driver.OracleDriver
     ez_db_jdbc_url=jdbc:oracle:thin:@10.118.128.89:1521:lsgamis
