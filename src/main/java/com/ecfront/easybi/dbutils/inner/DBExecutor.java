@@ -2,14 +2,13 @@ package com.ecfront.easybi.dbutils.inner;
 
 import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
+import com.ecfront.easybi.dbutils.inner.dbutilsext.QueryRunnerExt;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.Map;
 
 public class DBExecutor {
 
-    public static final QueryRunner queryRunner = new QueryRunner();
+    public static final QueryRunnerExt queryRunner = new QueryRunnerExt();
 
     public static <E> E get(String sql, Object[] params, Class<E> clazz, Connection conn, boolean isCloseConn) throws SQLException {
         E object = null;
@@ -124,19 +123,12 @@ public class DBExecutor {
     public static long count(String sql, Object[] params, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
         String countSql = dialect.count(sql);
         try {
-            Object count;
             if (null == params) {
-                count = queryRunner.query(conn, countSql, scalarHandler);
+                return (Long)queryRunner.query(conn, countSql,scalarHandler);
             } else {
-                count = queryRunner.query(conn, countSql, scalarHandler, params);
+                return (Long)queryRunner.query(conn, countSql, scalarHandler,params);
             }
-            if (count instanceof BigDecimal) {
-                return ((BigDecimal) count).longValue();
-            } else if (count instanceof Long) {
-                return (Long) count;
-            } else {
-                return ((Number) count).longValue();
-            }
+
         } catch (SQLException e) {
             logger.error("Count error : " + countSql, e);
             throw e;
@@ -231,7 +223,7 @@ public class DBExecutor {
     }
 
     private static void closeConnection(Connection conn) throws SQLException {
-        if (null != conn) {
+        if (null != conn&& !conn.isClosed()) {
             try {
                 logger.debug("Close connection:" + conn.toString());
                 conn.close();
@@ -246,9 +238,13 @@ public class DBExecutor {
         @Override
         public Object handle(ResultSet rs) throws SQLException {
             Object obj = super.handle(rs);
-            if (obj instanceof BigInteger)
-                return ((BigInteger) obj).longValue();
-            return obj;
+            if (obj instanceof BigDecimal) {
+                return ((BigDecimal) obj).longValue();
+            } else if (obj instanceof Long) {
+                return obj;
+            } else {
+                return ((Number) obj).longValue();
+            }
         }
     };
 

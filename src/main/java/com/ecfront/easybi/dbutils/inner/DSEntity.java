@@ -3,9 +3,11 @@ package com.ecfront.easybi.dbutils.inner;
 /**
  * Created by 震宇 on 2014/5/9.
  */
-public class PoolDTO {
+public class DSEntity {
 
     public String flag;
+    public boolean poolSupport;
+    public boolean monitor;
     public String url;
     public String driver;
     public String userName;

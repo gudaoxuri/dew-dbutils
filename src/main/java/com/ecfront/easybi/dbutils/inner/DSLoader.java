@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,31 +20,43 @@ public class DSLoader {
 
     private static final Map<String, DataSource> MULTI_DS = new HashMap<String, DataSource>();
     private static final Map<String, Dialect> MULTI_DB_DIALECT = new HashMap<String, Dialect>();
-    private static final Map<String, PoolDTO> MULTI_POOL = new HashMap<String, PoolDTO>();
+    private static final Map<String, DSEntity> MULTI_DS_ENTITY = new HashMap<String, DSEntity>();
 
     public static void reload() {
         MULTI_DS.clear();
         MULTI_DB_DIALECT.clear();
+        MULTI_DS_ENTITY.clear();
         loadMainDS();
-        if (ConfigContainer.IS_MULTI_DS_SUPPORT) {
+        if (ConfigContainer.MULTI_DS_SUPPORT) {
             loadMultiDS();
         }
     }
 
     public static Connection getConnection(String dsCode) {
+        Connection connection = null;
+        DSEntity dsEntity = MULTI_DS_ENTITY.get(dsCode);
         try {
-            Connection connection = MULTI_DS.get(dsCode).getConnection();
-            logger.debug("Connection info:" + connection.toString() + ",isClosed:" + connection.isClosed());
-            if (connection.isClosed()) {
-                //Re-setting connection when connection was close.
-                loadPool(MULTI_POOL.get(dsCode));
+            if (dsEntity.poolSupport) {
                 connection = MULTI_DS.get(dsCode).getConnection();
+                if (connection.isClosed()) {
+                    //Re-setting connection when connection was close.
+                    synchronized (DSLoader.class) {
+                        logger.warn("Connection info:" + connection.toString() + " was close.");
+                        loadPool(dsEntity);
+                        connection = MULTI_DS.get(dsCode).getConnection();
+                    }
+                }
+            } else {
+                Class.forName(dsEntity.driver).newInstance();
+                connection = DriverManager.getConnection(dsEntity.url, dsEntity.userName, dsEntity.password);
+                if(null== connection){
+                    logger.error("Connection can't create.");
+                }
             }
-            return connection;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Connection get error.", e);
         }
-        return null;
+        return connection;
     }
 
     public static Dialect getDialect(String dsCode) {
@@ -60,68 +73,80 @@ public class DSLoader {
         if (null != result) {
             for (Map<String, Object> res : result) {
                 if (null != res) {
-                    PoolDTO pool = new PoolDTO();
-                    pool.flag = res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString();
-                    pool.url = res.get(ConfigContainer.FLAG_URL.toUpperCase()).toString();
-                    pool.driver = res.get(ConfigContainer.FLAG_DRIVER.toUpperCase()).toString();
-                    pool.userName = res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()).toString();
-                    pool.password = res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()).toString();
-                    pool.defaultAutoCommit = Boolean.valueOf(res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()).toString());
-                    pool.initialSize = Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()).toString());
-                    pool.maxActive = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()).toString());
-                    pool.minIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()).toString());
-                    pool.maxIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()).toString());
-                    pool.maxWait = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()).toString());
-                    pool.removeAbandoned = Boolean.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()).toString());
-                    pool.removeAbandonedTimeoutMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()).toString());
-                    pool.timeBetweenEvictionRunsMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()).toString());
-                    pool.minEvictableIdleTimeMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()).toString());
-                    loadPool(pool);
+                    DSEntity dsEntity = new DSEntity();
+                    dsEntity.flag = res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString();
+                    dsEntity.poolSupport = Boolean.valueOf(res.get(ConfigContainer.FLAG_POOL_SUPPORT.toUpperCase()).toString());
+                    dsEntity.monitor = Boolean.valueOf(res.get(ConfigContainer.FLAG_MONITOR.toUpperCase()).toString());
+                    dsEntity.url = res.get(ConfigContainer.FLAG_URL.toUpperCase()).toString();
+                    dsEntity.driver = res.get(ConfigContainer.FLAG_DRIVER.toUpperCase()).toString();
+                    dsEntity.userName = res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()).toString();
+                    dsEntity.password = res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()).toString();
+                    dsEntity.defaultAutoCommit = Boolean.valueOf(res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()).toString());
+                    dsEntity.initialSize = Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()).toString());
+                    dsEntity.maxActive = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()).toString());
+                    dsEntity.minIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()).toString());
+                    dsEntity.maxIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()).toString());
+                    dsEntity.maxWait = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()).toString());
+                    dsEntity.removeAbandoned = Boolean.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()).toString());
+                    dsEntity.removeAbandonedTimeoutMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()).toString());
+                    dsEntity.timeBetweenEvictionRunsMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()).toString());
+                    dsEntity.minEvictableIdleTimeMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()).toString());
+                    MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
+                    loadPool(dsEntity);
                 }
             }
         }
     }
 
     private static void loadMainDS() {
-        PoolDTO pool = new PoolDTO();
-        pool.flag = null;
-        pool.url = ConfigContainer.DB_JDBC_URL;
-        pool.driver = ConfigContainer.DB_JDBC_DRIVER;
-        pool.userName = ConfigContainer.DB_JDBC_USERNAME;
-        pool.password = ConfigContainer.DB_JDBC_PASSWORD;
-        pool.defaultAutoCommit = ConfigContainer.DB_POOL_DEFAULT_AUTO_COMMIT;
-        pool.initialSize = ConfigContainer.DB_POOL_INITIAL_SIZE;
-        pool.maxActive = ConfigContainer.DB_POOL_MAX_ACTIVE;
-        pool.minIdle = ConfigContainer.DB_POOL_MIN_IDLE;
-        pool.maxIdle = ConfigContainer.DB_POOL_MAX_IDLE;
-        pool.maxWait = ConfigContainer.DB_POOL_MAX_WAIT;
-        pool.removeAbandoned = ConfigContainer.DB_POOL_REMOVE_ABANDONED;
-        pool.removeAbandonedTimeoutMillis = ConfigContainer.DB_POOL_REMOVE_ABANDONED_TIMEOUT;
-        pool.timeBetweenEvictionRunsMillis = ConfigContainer.DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
-        pool.minEvictableIdleTimeMillis = ConfigContainer.DB_POOL_MIN_EVICTABLE_IDLE_TIME;
-        loadPool(pool);
+        DSEntity dsEntity = new DSEntity();
+        dsEntity.flag = null;
+        dsEntity.url = ConfigContainer.DB_JDBC_URL;
+        dsEntity.poolSupport = ConfigContainer.DB_POOL_SUPPORT;
+        dsEntity.monitor = ConfigContainer.DB_POOL_MONITOR;
+        dsEntity.driver = ConfigContainer.DB_JDBC_DRIVER;
+        dsEntity.userName = ConfigContainer.DB_JDBC_USERNAME;
+        dsEntity.password = ConfigContainer.DB_JDBC_PASSWORD;
+        dsEntity.defaultAutoCommit = ConfigContainer.DB_POOL_DEFAULT_AUTO_COMMIT;
+        dsEntity.initialSize = ConfigContainer.DB_POOL_INITIAL_SIZE;
+        dsEntity.maxActive = ConfigContainer.DB_POOL_MAX_ACTIVE;
+        dsEntity.minIdle = ConfigContainer.DB_POOL_MIN_IDLE;
+        dsEntity.maxIdle = ConfigContainer.DB_POOL_MAX_IDLE;
+        dsEntity.maxWait = ConfigContainer.DB_POOL_MAX_WAIT;
+        dsEntity.removeAbandoned = ConfigContainer.DB_POOL_REMOVE_ABANDONED;
+        dsEntity.removeAbandonedTimeoutMillis = ConfigContainer.DB_POOL_REMOVE_ABANDONED_TIMEOUT;
+        dsEntity.timeBetweenEvictionRunsMillis = ConfigContainer.DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
+        dsEntity.minEvictableIdleTimeMillis = ConfigContainer.DB_POOL_MIN_EVICTABLE_IDLE_TIME;
+        MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
+        loadPool(dsEntity);
     }
 
-    private static void loadPool(PoolDTO pool) {
+    private static void loadPool(DSEntity dsEntity) {
         DruidDataSource ds = new DruidDataSource();
-        ds.setUrl(pool.url);
-        ds.setDriverClassName(pool.driver);
-        ds.setUsername(pool.userName);
-        ds.setPassword(pool.password);
-        ds.setDefaultAutoCommit(pool.defaultAutoCommit);
-        ds.setInitialSize(pool.initialSize);
-        ds.setMaxActive(pool.maxActive);
-        ds.setMinIdle(pool.minIdle);
-        ds.setMaxIdle(pool.maxIdle);
-        ds.setMaxWait(pool.maxWait);
-        ds.setRemoveAbandoned(pool.removeAbandoned);
-        ds.setRemoveAbandonedTimeoutMillis(pool.removeAbandonedTimeoutMillis);
-        ds.setTimeBetweenEvictionRunsMillis(pool.timeBetweenEvictionRunsMillis);
-        ds.setMinEvictableIdleTimeMillis(pool.minEvictableIdleTimeMillis);
-        MULTI_DS.put(pool.flag, ds);
-        MULTI_DB_DIALECT.put(pool.flag, parseDialect(pool.url));
-        MULTI_POOL.put(pool.flag, pool);
-        logger.debug("Load pool: flag" + pool.flag + ",url:" + pool.url);
+        ds.setUrl(dsEntity.url);
+        ds.setDriverClassName(dsEntity.driver);
+        ds.setUsername(dsEntity.userName);
+        ds.setPassword(dsEntity.password);
+        ds.setDefaultAutoCommit(dsEntity.defaultAutoCommit);
+        ds.setInitialSize(dsEntity.initialSize);
+        ds.setMaxActive(dsEntity.maxActive);
+        ds.setMinIdle(dsEntity.minIdle);
+        ds.setMaxIdle(dsEntity.maxIdle);
+        ds.setMaxWait(dsEntity.maxWait);
+        ds.setRemoveAbandoned(dsEntity.removeAbandoned);
+        ds.setRemoveAbandonedTimeoutMillis(dsEntity.removeAbandonedTimeoutMillis);
+        ds.setTimeBetweenEvictionRunsMillis(dsEntity.timeBetweenEvictionRunsMillis);
+        ds.setMinEvictableIdleTimeMillis(dsEntity.minEvictableIdleTimeMillis);
+        if (dsEntity.monitor) {
+            try {
+                ds.setFilters("wall,mergeStat");
+            } catch (SQLException e) {
+                logger.warn("Monitor set error.", e);
+            }
+        }
+        MULTI_DS.put(dsEntity.flag, ds);
+        MULTI_DB_DIALECT.put(dsEntity.flag, parseDialect(dsEntity.url));
+        logger.debug("Load pool: flag:" + dsEntity.flag + ",url:" + dsEntity.url);
     }
 
     private static Dialect parseDialect(String driver) {

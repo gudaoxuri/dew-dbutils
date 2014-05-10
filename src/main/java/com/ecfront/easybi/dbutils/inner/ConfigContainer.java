@@ -6,6 +6,8 @@ import com.ecfront.easybi.base.utils.PropertyHelper;
 public class ConfigContainer {
 
     public static final String FLAG_CODE= "code";
+    public static final String FLAG_POOL_SUPPORT= "poolSupport";
+    public static final String FLAG_MONITOR= "monitor";
     public static final String FLAG_DRIVER = "driver";
     public static final String FLAG_URL = "url";
     public static final String FLAG_USERNAME = "username";
@@ -22,12 +24,14 @@ public class ConfigContainer {
     public static final String FLAG_MIN_EVICTABLE_IDLE_TIME="minEvictableIdle";
 
 
-    public static Boolean IS_MULTI_DS_SUPPORT;
+    public static Boolean MULTI_DS_SUPPORT;
     public static String MULTI_DS_QUERY;
     public static String DB_JDBC_DRIVER;
     public static String DB_JDBC_URL;
     public static String DB_JDBC_USERNAME;
     public static String DB_JDBC_PASSWORD;
+    public static boolean DB_POOL_SUPPORT;
+    public static boolean DB_POOL_MONITOR;
     public static int DB_POOL_INITIAL_SIZE;
     public static int DB_POOL_MAX_ACTIVE;
     public static int DB_POOL_MIN_IDLE;
@@ -40,13 +44,14 @@ public class ConfigContainer {
     public static int DB_POOL_MIN_EVICTABLE_IDLE_TIME;
 
     static {
-        String temp = PropertyHelper.get("ez_multi_ds_support");
-        IS_MULTI_DS_SUPPORT = null != temp && "true".equalsIgnoreCase(temp.trim()) ? true : false;
+        MULTI_DS_SUPPORT = null != PropertyHelper.get("ez_multi_ds_support") ? Boolean.valueOf(PropertyHelper.get("ez_multi_ds_support")) : true;
         MULTI_DS_QUERY = PropertyHelper.get("ez_multi_ds_query");
         DB_JDBC_DRIVER = PropertyHelper.get("ez_db_jdbc_driver");
         DB_JDBC_URL = PropertyHelper.get("ez_db_jdbc_url");
         DB_JDBC_USERNAME = PropertyHelper.get("ez_db_jdbc_username");
         DB_JDBC_PASSWORD = PropertyHelper.get("ez_db_jdbc_password");
+        DB_POOL_SUPPORT = null != PropertyHelper.get("ez_db_pool_support") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_support")) : true;
+        DB_POOL_MONITOR = null != PropertyHelper.get("ez_db_pool_monitor") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_monitor")) : false;
         DB_POOL_INITIAL_SIZE = null != PropertyHelper.get("ez_db_pool_initialSize") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_initialSize")) : 10;
         DB_POOL_MAX_ACTIVE = null != PropertyHelper.get("ez_db_pool_maxActive") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_maxActive")) : 50;
         DB_POOL_MIN_IDLE = null != PropertyHelper.get("ez_db_pool_minIdle") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_minIdle")) : 5;

@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBTest {
 
@@ -64,6 +66,7 @@ public class DBTest {
     }
 
     private void testGetObject(DB db) throws SQLException {
+        logger.debug("testGetObject.");
         User user = db.getObject("select * from user where id= ? ", new Object[]{1}, User.class);
         Assert.assertEquals(user.getId(), 1);
     }
@@ -93,9 +96,26 @@ public class DBTest {
         DB db = new DB();
         testCreateTable(db);
         testUpdate(db);
-        for (int i = 0; i < 11; i++) {
-            testGetObject(db);
+        testBatch(db);
+        final CountDownLatch watch=new CountDownLatch(10000);
+        final AtomicInteger count=new AtomicInteger(0);
+        for (int i = 0; i < 100; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 100; i++) {
+                        try {
+                            logger.debug(">>>>>>>>>>>>>>"+ count.incrementAndGet());
+                            watch.countDown();
+                            testFind(new DB());
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
         }
+        watch.await();
         testDropTable(db);
     }
 
