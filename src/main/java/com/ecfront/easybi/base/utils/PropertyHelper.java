@@ -1,8 +1,12 @@
 package com.ecfront.easybi.base.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,9 +30,9 @@ public class PropertyHelper {
                 if (null == properties) {
                     try {
                         properties = new HashMap<String, String>();
-                        loadProperties(PropertyHelper.class.getResource("/").getPath());
+                        loadProperties(URLDecoder.decode(PropertyHelper.class.getResource("/").getPath(), "utf-8"));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error("Get property error:",e);
                     }
                 }
             }
@@ -55,5 +59,10 @@ public class PropertyHelper {
             key = (String) it.next();
             properties.put(key.trim(), ((String) prop.get(key)).trim());
         }
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(PropertyHelper.class);
+
+    private PropertyHelper() {
     }
 }
