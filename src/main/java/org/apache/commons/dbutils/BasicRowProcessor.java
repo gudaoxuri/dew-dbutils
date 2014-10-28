@@ -19,10 +19,7 @@ package org.apache.commons.dbutils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Basic implementation of the <code>RowProcessor</code> interface.
@@ -177,7 +174,7 @@ public class BasicRowProcessor implements RowProcessor {
      * key.toString().toLowerCase()
      * </pre>
      */
-    private static class CaseInsensitiveHashMap extends HashMap<String, Object> {
+    private static class CaseInsensitiveHashMap extends LinkedHashMap<String, Object> {
         /**
          * The internal mapping from lowercase keys to the real keys.
          *
@@ -192,7 +189,7 @@ public class BasicRowProcessor implements RowProcessor {
          * </ul>
          * </p>
          */
-        private final Map<String, String> lowerCaseMap = new HashMap<String, String>();
+        private final Map<String, String> lowerCaseMap = new LinkedHashMap<String, String>();
 
         /**
          * Required for serialization support.
