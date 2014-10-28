@@ -18,11 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DBTest {
 
     private void testDropTable(DB db) throws SQLException {
-        db.update("drop table user");
+        db.ddl("drop table user");
     }
 
     private void testCreateTable(DB db) throws SQLException {
-        db.update("create table user(" +
+        db.ddl("create table user(" +
                 "id int not null," +
                 "name varchar(255)," +
                 "password varchar(255)," +
@@ -86,8 +86,8 @@ public class DBTest {
         testCreateTable(db);
         List<Meta> metas = db.getMetaData("user");
         Assert.assertEquals(metas.get(0).label, "ID");
-        Meta meta=db.getMetaData("user","name") ;
-        Assert.assertEquals(meta.label,"NAME");
+        Meta meta = db.getMetaData("user", "name");
+        Assert.assertEquals(meta.label, "NAME");
         testDropTable(db);
     }
 
@@ -97,15 +97,15 @@ public class DBTest {
         testCreateTable(db);
         testUpdate(db);
         testBatch(db);
-        final CountDownLatch watch=new CountDownLatch(10000);
-        final AtomicInteger count=new AtomicInteger(0);
+        final CountDownLatch watch = new CountDownLatch(10000);
+        final AtomicInteger count = new AtomicInteger(0);
         for (int i = 0; i < 100; i++) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     for (int i = 0; i < 100; i++) {
                         try {
-                            logger.debug(">>>>>>>>>>>>>>"+ count.incrementAndGet());
+                            logger.debug(">>>>>>>>>>>>>>" + count.incrementAndGet());
                             watch.countDown();
                             testFind(new DB());
                         } catch (SQLException e) {
@@ -168,7 +168,7 @@ public class DBTest {
 
     public void testMultiDS() throws Exception {
         DB db = new DB();
-        db.update("create table multi_ds(" +
+        db.ddl("create table multi_ds(" +
                 "code varchar(255) not null," +
                 "driver varchar(255)," +
                 "url varchar(255)," +

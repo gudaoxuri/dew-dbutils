@@ -2,14 +2,12 @@ package com.ecfront.easybi.dbutils.inner;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
-import com.ecfront.easybi.dbutils.inner.dialect.H2Dialect;
-import com.ecfront.easybi.dbutils.inner.dialect.MySQLDialect;
-import com.ecfront.easybi.dbutils.inner.dialect.OracleDialect;
+import com.ecfront.easybi.dbutils.inner.dialect.DialectHelper;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -32,31 +30,32 @@ public class DSLoader {
         }
     }
 
-    public static Connection getConnection(String dsCode) {
-        Connection connection = null;
+    public static ConnectionWrap getConnection(String dsCode) {
+        ConnectionWrap cw = new ConnectionWrap();
         DSEntity dsEntity = MULTI_DS_ENTITY.get(dsCode);
+        cw.type =DialectHelper.getDialectType(dsEntity.driver);
         try {
             if (dsEntity.poolSupport) {
-                connection = MULTI_DS.get(dsCode).getConnection();
-                if (connection.isClosed()) {
+                cw.conn=MULTI_DS.get(dsCode).getConnection();
+                if (cw.conn.isClosed()) {
                     //Re-setting connection when connection was close.
                     synchronized (DSLoader.class) {
-                        logger.warn("Connection info:" + connection.toString() + " was close.");
+                        logger.warn("Connection info:" + cw.conn.toString() + " was close.");
                         loadPool(dsEntity);
-                        connection = MULTI_DS.get(dsCode).getConnection();
+                        cw.conn = MULTI_DS.get(dsCode).getConnection();
                     }
                 }
             } else {
                 Class.forName(dsEntity.driver).newInstance();
-                connection = DriverManager.getConnection(dsEntity.url, dsEntity.userName, dsEntity.password);
-                if (null == connection) {
+                cw.conn = DriverManager.getConnection(dsEntity.url, dsEntity.userName, dsEntity.password);
+                if (null == cw.conn) {
                     logger.error("Connection can't create.");
                 }
             }
         } catch (Exception e) {
             logger.error("Connection get error.", e);
         }
-        return connection;
+        return cw;
     }
 
     public static Dialect getDialect(String dsCode) {
@@ -154,6 +153,16 @@ public class DSLoader {
     }
 
     private static void loadPool(DSEntity dsEntity) {
+        if(ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("druid")){
+            MULTI_DS.put(dsEntity.flag, loadDruidPool(dsEntity));
+        }else if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("dbcp")) {
+            MULTI_DS.put(dsEntity.flag, loadDBCPPool(dsEntity));
+        }
+        MULTI_DB_DIALECT.put(dsEntity.flag, DialectHelper.parseDialect(dsEntity.driver));
+        logger.debug("Load pool: flag:" + dsEntity.flag + ",url:" + dsEntity.url);
+    }
+
+    private static DataSource loadDruidPool(DSEntity dsEntity) {
         DruidDataSource ds = new DruidDataSource();
         ds.setUrl(dsEntity.url);
         ds.setDriverClassName(dsEntity.driver);
@@ -176,24 +185,25 @@ public class DSLoader {
                 logger.warn("Monitor set error.", e);
             }
         }
-        MULTI_DS.put(dsEntity.flag, ds);
-        MULTI_DB_DIALECT.put(dsEntity.flag, parseDialect(dsEntity.url));
-        logger.debug("Load pool: flag:" + dsEntity.flag + ",url:" + dsEntity.url);
+        return ds;
     }
 
-    private static Dialect parseDialect(String driver) {
-        if (null != driver && driver.split(":").length > 2) {
-            String type = driver.split(":")[1].trim();
-            if ("oracle".equalsIgnoreCase(type)) {
-                return new OracleDialect();
-            } else if ("mysql".equalsIgnoreCase(type)) {
-                return new MySQLDialect();
-            } else if ("h2".equalsIgnoreCase(type)) {
-                return new H2Dialect();
-            }
-        }
-        logger.error("Parse dialect error : " + driver);
-        return null;
+    private static DataSource loadDBCPPool(DSEntity dsEntity) {
+        BasicDataSource ds = new BasicDataSource();
+        ds.setUrl(dsEntity.url);
+        ds.setDriverClassName(dsEntity.driver);
+        ds.setUsername(dsEntity.userName);
+        ds.setPassword(dsEntity.password);
+        ds.setDefaultAutoCommit(dsEntity.defaultAutoCommit);
+        ds.setInitialSize(dsEntity.initialSize);
+        ds.setMaxActive(dsEntity.maxActive);
+        ds.setMinIdle(dsEntity.minIdle);
+        ds.setMaxIdle(dsEntity.maxIdle);
+        ds.setMaxWait(dsEntity.maxWait);
+        ds.setRemoveAbandoned(dsEntity.removeAbandoned);
+        ds.setTimeBetweenEvictionRunsMillis(dsEntity.timeBetweenEvictionRunsMillis);
+        ds.setMinEvictableIdleTimeMillis(dsEntity.minEvictableIdleTimeMillis);
+        return ds;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DSLoader.class);

@@ -4,31 +4,30 @@ package com.ecfront.easybi.dbutils.inner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Transaction {
 
 
-    public static Connection open(String dsCode) {
-        Connection conn = threadLocalConnection.get();
+    public static ConnectionWrap open(String dsCode) {
+        ConnectionWrap cw = threadLocalConnection.get();
         try {
-            if (null == conn) {
-                conn = DSLoader.getConnection(dsCode);
-                threadLocalConnection.set(conn);
+            if (null == cw) {
+                cw = DSLoader.getConnection(dsCode);
+                threadLocalConnection.set(cw);
             }
-            conn.setAutoCommit(false);
+            cw.conn.setAutoCommit(false);
         } catch (SQLException e) {
             logger.error("Connection open error.", e);
         }
-        return conn;
+        return cw;
     }
 
     public static void commit() {
-        Connection conn = threadLocalConnection.get();
-        if (null != conn) {
+        ConnectionWrap cw = threadLocalConnection.get();
+        if (null != cw.conn) {
             try {
-                conn.commit();
+                cw.conn.commit();
             } catch (SQLException e) {
                 logger.error("Connection commit error.", e);
             }
@@ -37,10 +36,10 @@ public class Transaction {
     }
 
     public static void rollback() {
-        Connection conn = threadLocalConnection.get();
-        if (null != conn) {
+        ConnectionWrap cw = threadLocalConnection.get();
+        if (null != cw.conn) {
             try {
-                conn.rollback();
+                cw.conn.rollback();
             } catch (SQLException e) {
                 logger.error("Connection rollback error.", e);
             }
@@ -49,10 +48,10 @@ public class Transaction {
     }
 
     private static void close() {
-        Connection conn = threadLocalConnection.get();
-        if (null != conn) {
+        ConnectionWrap cw = threadLocalConnection.get();
+        if (null != cw.conn) {
             try {
-                conn.close();
+                cw.conn.close();
                 threadLocalConnection.set(null);
             } catch (SQLException e) {
                 logger.error("Connection close error.", e);
@@ -60,7 +59,7 @@ public class Transaction {
         }
     }
 
-    private static final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<Connection>();
+    private static final ThreadLocal<ConnectionWrap> threadLocalConnection = new ThreadLocal<ConnectionWrap>();
 
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 }

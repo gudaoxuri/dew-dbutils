@@ -4,6 +4,7 @@ import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import com.ecfront.easybi.dbutils.inner.dbutilsext.QueryRunnerExt;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
+import com.ecfront.easybi.dbutils.inner.dialect.DialectType;
 import org.apache.commons.dbutils.handlers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,115 +19,136 @@ public class DBExecutor {
 
     public static final QueryRunnerExt queryRunner = new QueryRunnerExt();
 
-    public static <E> E get(String sql, Object[] params, Class<E> clazz, Connection conn, boolean isCloseConn) throws SQLException {
+    public static <E> E get(String sql, Object[] params, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL && params != null) {
+            throw new SQLException("SparkSQL don't support [params] parameter.");
+        }
         E object = null;
         try {
             if (params == null) {
-                object = (E) queryRunner.query(conn, sql, new BeanHandler(clazz));
+                object = (E) queryRunner.query(cw, sql, new BeanHandler(clazz));
             } else {
-                object = (E) queryRunner.query(conn, sql, new BeanHandler(clazz), params);
+                object = (E) queryRunner.query(cw, sql, new BeanHandler(clazz), params);
             }
         } catch (SQLException e) {
             logger.error("Get error : " + sql, e);
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
         return object;
     }
 
-    public static <E> List<E> find(String sql, Object[] params, Class<E> clazz, Connection conn, boolean isCloseConn) throws SQLException {
+    public static <E> List<E> find(String sql, Object[] params, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL && params != null) {
+            throw new SQLException("SparkSQL don't support [params] parameter.");
+        }
         List<E> list = null;
         try {
             if (null == params) {
-                list = (List<E>) queryRunner.query(conn, sql, new BeanListHandler(clazz));
+                list = (List<E>) queryRunner.query(cw, sql, new BeanListHandler(clazz));
             } else {
-                list = (List<E>) queryRunner.query(conn, sql, new BeanListHandler(clazz), params);
+                list = (List<E>) queryRunner.query(cw, sql, new BeanListHandler(clazz), params);
             }
         } catch (SQLException e) {
             logger.error("Find error : " + sql, e);
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
         return list;
     }
 
-    public static <E> Page<E> find(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
+    public static <E> Page<E> find(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL) {
+            throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
+        }
         Page<E> page = new Page<E>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
-        page.recordTotal = count(pagedSql, params, conn, false, dialect);
+        page.recordTotal = count(pagedSql, params, cw, false, dialect);
         page.pageTotal = (page.recordTotal + pageSize - 1) / pageSize;
-        page.objects = find(pagedSql, params, clazz, conn, isCloseConn);
+        page.objects = find(pagedSql, params, clazz, cw, isCloseConn);
         return page;
     }
 
-    public static Map<String, Object> get(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
+    public static Map<String, Object> get(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL && params != null) {
+            throw new SQLException("SparkSQL don't support [params] parameter.");
+        }
         Map<String, Object> map = null;
         try {
             if (null == params) {
-                map = queryRunner.query(conn, sql, new MapHandler());
+                map = queryRunner.query(cw, sql, new MapHandler());
             } else {
-                map = queryRunner.query(conn, sql, new MapHandler(), params);
+                map = queryRunner.query(cw, sql, new MapHandler(), params);
             }
         } catch (SQLException e) {
             logger.error("Get error : " + sql, e);
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
         return map;
     }
 
-    public static List<Map<String, Object>> find(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
+    public static List<Map<String, Object>> find(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL && params != null) {
+            throw new SQLException("SparkSQL don't support [params] parameter.");
+        }
         List<Map<String, Object>> list = null;
         try {
             if (null == params) {
-                list = queryRunner.query(conn, sql, new MapListHandler());
+                list = queryRunner.query(cw, sql, new MapListHandler());
             } else {
-                list = queryRunner.query(conn, sql, new MapListHandler(), params);
+                list = queryRunner.query(cw, sql, new MapListHandler(), params);
             }
         } catch (SQLException e) {
             logger.error("Find error : " + sql, e);
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
         return list;
     }
 
-    public static Page<Map<String, Object>> find(String sql, Object[] params, long pageNumber, long pageSize, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
+    public static Page<Map<String, Object>> find(String sql, Object[] params, long pageNumber, long pageSize, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL) {
+            throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
+        }
         Page<Map<String, Object>> page = new Page<Map<String, Object>>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
-        page.recordTotal = count(sql, params, conn, false, dialect);
+        page.recordTotal = count(sql, params, cw, false, dialect);
         page.pageTotal = (page.recordTotal + pageSize - 1) / pageSize;
-        page.objects = find(pagedSql, params, conn, isCloseConn);
+        page.objects = find(pagedSql, params, cw, isCloseConn);
         return page;
     }
 
-    public static long count(String sql, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
-        return count(sql, null, conn, isCloseConn, dialect);
+    public static long count(String sql, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
+        return count(sql, null, cw, isCloseConn, dialect);
     }
 
-    public static long count(String sql, Object[] params, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {
+    public static long count(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL) {
+            throw new SQLException("SparkSQL don't support [count] method,please use [find] method replace it.");
+        }
         String countSql = dialect.count(sql);
         try {
             if (null == params) {
-                return (Long)queryRunner.query(conn, countSql,scalarHandler);
+                return (Long) queryRunner.query(cw, countSql, scalarHandler);
             } else {
-                return (Long)queryRunner.query(conn, countSql, scalarHandler,params);
+                return (Long) queryRunner.query(cw, countSql, scalarHandler, params);
             }
 
         } catch (SQLException e) {
@@ -134,21 +156,24 @@ public class DBExecutor {
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
     }
 
-    public static int update(String sql, Object[] params, Connection conn, boolean isCloseConn) throws SQLException {
+    public static int update(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL && params != null) {
+            throw new SQLException("SparkSQL don't support [params] parameter.");
+        }
         try {
             if (null == params) {
-                return queryRunner.update(conn, sql);
+                return queryRunner.update(cw, sql);
             } else {
-                return queryRunner.update(conn, sql, params);
+                return queryRunner.update(cw, sql, params);
             }
         } catch (SQLException e) {
             try {
-                conn.rollback();
+                cw.conn.rollback();
             } catch (SQLException e1) {
                 logger.error("Connection error : " + sql, e1);
                 throw e1;
@@ -157,17 +182,20 @@ public class DBExecutor {
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
     }
 
-    public static int[] batch(String sql, Object[][] params, Connection conn, boolean isCloseConn) throws SQLException {
+    public static int[] batch(String sql, Object[][] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL) {
+            throw new SQLException("SparkSQL don't support [batch] method.");
+        }
         try {
-            return queryRunner.batch(conn, sql, params);
+            return queryRunner.batch(cw, sql, params);
         } catch (SQLException e) {
             try {
-                conn.rollback();
+                cw.conn.rollback();
             } catch (SQLException e1) {
                 logger.error("Connection error : " + sql, e1);
                 throw e1;
@@ -176,33 +204,33 @@ public class DBExecutor {
             throw e;
         } finally {
             if (isCloseConn) {
-                closeConnection(conn);
+                closeConnection(cw.conn);
             }
         }
     }
 
-    public static List<Meta> getMetaData(String tableName, Connection conn) throws SQLException {
-       return findMetaData(tableName, null, conn);
+    public static List<Meta> getMetaData(String tableName, ConnectionWrap cw) throws SQLException {
+        return findMetaData(tableName, null, cw);
     }
 
-    public static Meta getMetaData(String tableName, String fieldName, Connection conn) throws SQLException {
-        List<Meta> metas=findMetaData(tableName,fieldName, conn);
-        if(null!=metas&&metas.size()==1){
+    public static Meta getMetaData(String tableName, String fieldName, ConnectionWrap cw) throws SQLException {
+        List<Meta> metas = findMetaData(tableName, fieldName, cw);
+        if (null != metas && metas.size() == 1) {
             return metas.get(0);
         }
         return null;
     }
 
-    private static List<Meta> findMetaData(String tableName, String fieldName,Connection conn) throws SQLException {
+    private static List<Meta> findMetaData(String tableName, String fieldName, ConnectionWrap cw) throws SQLException {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("select * from " + tableName + " where 1=2");
+            st = cw.conn.prepareStatement("select * from " + tableName + " where 1=2");
             rs = st.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             List<Meta> metas = new ArrayList<Meta>();
             for (int i = 1; i <= meta.getColumnCount(); i++) {
-                if(null!=fieldName&& !meta.getColumnLabel(i).equalsIgnoreCase(fieldName)) {
+                if (null != fieldName && !meta.getColumnLabel(i).equalsIgnoreCase(fieldName)) {
                     continue;
                 }
                 metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i), meta.getColumnLabel(i)));
@@ -218,12 +246,31 @@ public class DBExecutor {
             if (null != st) {
                 st.close();
             }
-            closeConnection(conn);
+            closeConnection(cw.conn);
+        }
+    }
+
+    public static void ddl(String sql, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        try {
+            queryRunner.update(cw, sql);
+        } catch (SQLException e) {
+            try {
+                cw.conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Connection error : " + sql, e1);
+                throw e1;
+            }
+            logger.error("ddl error : " + sql, e);
+            throw e;
+        } finally {
+            if (isCloseConn) {
+                closeConnection(cw.conn);
+            }
         }
     }
 
     private static void closeConnection(Connection conn) throws SQLException {
-        if (null != conn&& !conn.isClosed()) {
+        if (null != conn && !conn.isClosed()) {
             try {
                 logger.debug("Close connection:" + conn.toString());
                 conn.close();

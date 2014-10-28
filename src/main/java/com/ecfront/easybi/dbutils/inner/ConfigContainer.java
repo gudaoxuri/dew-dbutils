@@ -31,6 +31,7 @@ public class ConfigContainer {
     public static String DB_JDBC_USERNAME;
     public static String DB_JDBC_PASSWORD;
     public static boolean DB_POOL_SUPPORT;
+    public static String DB_POOL_TYPE;
     public static boolean DB_POOL_MONITOR;
     public static int DB_POOL_INITIAL_SIZE;
     public static int DB_POOL_MAX_ACTIVE;
@@ -51,6 +52,7 @@ public class ConfigContainer {
         DB_JDBC_USERNAME = PropertyHelper.get("ez_db_jdbc_username");
         DB_JDBC_PASSWORD = PropertyHelper.get("ez_db_jdbc_password");
         DB_POOL_SUPPORT = null != PropertyHelper.get("ez_db_pool_support") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_support")) : true;
+        DB_POOL_TYPE= null != PropertyHelper.get("ez_db_pool_type") ? PropertyHelper.get("ez_db_pool_type") : "druid";
         DB_POOL_MONITOR = null != PropertyHelper.get("ez_db_pool_monitor") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_monitor")) : false;
         DB_POOL_INITIAL_SIZE = null != PropertyHelper.get("ez_db_pool_initialSize") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_initialSize")) : 10;
         DB_POOL_MAX_ACTIVE = null != PropertyHelper.get("ez_db_pool_maxActive") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_maxActive")) : 50;

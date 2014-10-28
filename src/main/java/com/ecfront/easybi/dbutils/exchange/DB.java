@@ -1,5 +1,6 @@
 package com.ecfront.easybi.dbutils.exchange;
 
+import com.ecfront.easybi.dbutils.inner.ConnectionWrap;
 import com.ecfront.easybi.dbutils.inner.DBExecutor;
 import com.ecfront.easybi.dbutils.inner.DSLoader;
 import com.ecfront.easybi.dbutils.inner.Transaction;
@@ -7,7 +8,6 @@ import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +18,14 @@ import java.util.Map;
 public class DB {
 
     /**
+     * DDL操作
+     * @param ddl  DDL语句
+     */
+    public void ddl(String ddl) throws SQLException{
+             DBExecutor.ddl(ddl, getConnection(dsCode), isCloseConnection());
+    }
+
+    /**
      * 获取单个对象
      *
      * @param sql   SQL
@@ -25,7 +33,7 @@ public class DB {
      * @return java对象
      */
     public <E> E getObject(String sql, Class<E> clazz) throws SQLException {
-        return DBExecutor.get(sql, null, clazz, getConnection(dsCode), isCloseConnection());
+        return getObject(sql, null, clazz);
     }
 
     /**
@@ -48,7 +56,7 @@ public class DB {
      * @return java对象
      */
     public <E> List<E> findObjects(String sql, Class<E> clazz) throws SQLException {
-        return DBExecutor.find(sql, null, clazz, getConnection(dsCode), isCloseConnection());
+        return findObjects(sql, null, clazz);
     }
 
     /**
@@ -73,7 +81,7 @@ public class DB {
      * @return 多个对象（带分页）
      */
     public <E> Page<E> findObjects(String sql, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
-        return DBExecutor.find(sql, null, pageNumber, pageSize, clazz, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
+        return findObjects(sql, null, pageNumber, pageSize, clazz);
     }
 
     /**
@@ -97,7 +105,7 @@ public class DB {
      * @return 单条记录
      */
     public Map<String, Object> get(String sql) throws SQLException {
-        return DBExecutor.get(sql, null, getConnection(dsCode), isCloseConnection());
+        return get(sql, null);
     }
 
     /**
@@ -119,7 +127,7 @@ public class DB {
      * @return 多条记录（带分页）
      */
     public List<Map<String, Object>> find(String sql) throws SQLException {
-        return DBExecutor.find(sql, null, getConnection(dsCode), isCloseConnection());
+        return find(sql, null);
     }
 
     /**
@@ -142,7 +150,7 @@ public class DB {
      * @return 多条记录（带分页）
      */
     public Page<Map<String, Object>> find(String sql, int pageNumber, int pageSize) throws SQLException {
-        return DBExecutor.find(sql, null, pageNumber, pageSize, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
+        return find(sql, null, pageNumber, pageSize);
     }
 
 
@@ -166,7 +174,7 @@ public class DB {
      * @return 记录数
      */
     public long count(String sql) throws SQLException {
-        return DBExecutor.count(sql, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
+        return count(sql,null);
     }
 
     /**
@@ -186,7 +194,7 @@ public class DB {
      * @param sql SQL
      */
     public int update(String sql) throws SQLException {
-        return DBExecutor.update(sql, null, getConnection(dsCode), isCloseConnection());
+        return update(sql, null);
     }
 
     /**
@@ -240,7 +248,7 @@ public class DB {
         transactionConnection = null;
     }
 
-    private Connection getConnection(String dsCode) {
+    private ConnectionWrap getConnection(String dsCode) {
         if (null == transactionConnection) {
             return DSLoader.getConnection(dsCode);
         }
@@ -256,7 +264,7 @@ public class DB {
     }
 
     private String dsCode;
-    protected Connection transactionConnection;
+    protected ConnectionWrap transactionConnection;
 
     public DB() {
         dsCode = null;
