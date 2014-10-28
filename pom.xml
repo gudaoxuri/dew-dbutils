@@ -167,4 +167,11 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>zjhc</id>
+            <url>http://134.96.82.31:9099/nexus/content/repositories/third-party/</url>
+        </repository>
+    </distributionManagement>
+
 </project>
