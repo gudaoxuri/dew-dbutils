@@ -12,9 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * Created by 震宇 on 2014/5/10.
- */
 public class QueryRunnerExt extends QueryRunner {
 
     public int[] batch(ConnectionWrap cw, String sql, Object[][] params) throws SQLException {
