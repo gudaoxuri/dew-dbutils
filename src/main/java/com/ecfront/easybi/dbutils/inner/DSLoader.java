@@ -2,7 +2,7 @@ package com.ecfront.easybi.dbutils.inner;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
-import com.ecfront.easybi.dbutils.inner.dialect.DialectHelper;
+import com.ecfront.easybi.dbutils.inner.dialect.DialectFactory;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class DSLoader {
     public static ConnectionWrap getConnection(String dsCode) {
         ConnectionWrap cw = new ConnectionWrap();
         DSEntity dsEntity = MULTI_DS_ENTITY.get(dsCode);
-        cw.type =DialectHelper.getDialectType(dsEntity.driver);
+        cw.type = DialectFactory.getDialectType(dsEntity.driver);
         try {
             if (dsEntity.poolSupport) {
                 cw.conn=MULTI_DS.get(dsCode).getConnection();
@@ -158,7 +158,7 @@ public class DSLoader {
         }else if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("dbcp")) {
             MULTI_DS.put(dsEntity.flag, loadDBCPPool(dsEntity));
         }
-        MULTI_DB_DIALECT.put(dsEntity.flag, DialectHelper.parseDialect(dsEntity.driver));
+        MULTI_DB_DIALECT.put(dsEntity.flag, DialectFactory.parseDialect(dsEntity.driver));
         logger.debug("Load pool: flag:" + dsEntity.flag + ",url:" + dsEntity.url);
     }
 

@@ -1,5 +1,6 @@
 package com.ecfront.easybi.dbutils.inner;
 
+import com.ecfront.easybi.dbutils.exchange.DB;
 import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import com.ecfront.easybi.dbutils.inner.dbutilsext.QueryRunnerExt;
@@ -9,6 +10,7 @@ import org.apache.commons.dbutils.handlers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -77,7 +79,7 @@ public class DBExecutor {
         return page;
     }
 
-    public static Map<String, Object> get(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+    public static Map<String, Object> get(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException, IOException {
         if (cw.type == DialectType.SPARK_SQL && params != null) {
             throw new SQLException("SparkSQL don't support [params] parameter.");
         }
@@ -94,6 +96,11 @@ public class DBExecutor {
         } finally {
             if (isCloseConn) {
                 closeConnection(cw.conn);
+            }
+        }
+        for(Map.Entry<String,Object> entry:map.entrySet()){
+            if(entry.getValue() instanceof Clob){
+                entry.setValue(DB.convertClob((Clob)entry.getValue()));
             }
         }
         return map;
@@ -159,6 +166,31 @@ public class DBExecutor {
                 closeConnection(cw.conn);
             }
         }
+    }
+
+    public static int updateModel(String tableName, Map<String, Object> values, ConnectionWrap connection, boolean closeConnection) throws SQLException {
+        StringBuilder sb = new StringBuilder("INSERT INTO " + tableName + " ( ");
+        StringBuilder keys = new StringBuilder();
+        StringBuilder valueList = new StringBuilder();
+        List params = new ArrayList<Object>();
+        for (Map.Entry<String, Object> field : values.entrySet()) {
+            keys.append(field.getKey() + ",");
+            valueList.append("?,");
+            params.add(field.getValue());
+        }
+        sb.append(keys.substring(0, keys.length() - 1) + ") VALUES ( " + valueList.substring(0, valueList.length() - 1) + " )");
+        return update(sb.toString(), params.toArray(new Object[params.size()]), connection, closeConnection);
+    }
+
+    public static int updateModel(String tableName, Object pkValue, Map<String, Object> values, ConnectionWrap connection, boolean closeConnection) throws SQLException {
+        StringBuilder sb = new StringBuilder("UPDATE " + tableName + " SET ");
+        List params = new ArrayList<Object>();
+        for (Map.Entry<String, Object> field : values.entrySet()) {
+            sb.append(field.getKey() + "=? ,");
+            params.add(field.getValue());
+        }
+        params.add(pkValue);
+        return update(sb.substring(0, sb.length() - 1) + " WHERE id = ? ", params.toArray(new Object[params.size()]), connection, closeConnection);
     }
 
     public static int update(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {

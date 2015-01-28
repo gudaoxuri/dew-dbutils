@@ -8,6 +8,10 @@ import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +22,35 @@ import java.util.Map;
 public class DB {
 
     /**
-     * DDL操作
-     * @param ddl  DDL语句
+     * 创建表
+     *
+     * @param tableName 表名
+     * @param fields    表字段
+     * @param pk        主键名
      */
-    public void ddl(String ddl) throws SQLException{
-             DBExecutor.ddl(ddl, getConnection(dsCode), isCloseConnection());
+    public void createTableIfNotExist(String tableName, Map<String, String> fields, String pk) throws SQLException {
+        DBExecutor.ddl(getDialect(dsCode).createTableIfNotExist(tableName, fields, pk), getConnection(dsCode), isCloseConnection());
+    }
+
+    /**
+     * DDL操作
+     *
+     * @param ddl DDL语句
+     */
+    public void ddl(String ddl) throws SQLException {
+        DBExecutor.ddl(ddl, getConnection(dsCode), isCloseConnection());
+    }
+
+    /**
+     * 获取单条记录
+     *
+     * @param tableName 表名
+     * @param pkValue   主键值
+     * @param clazz     对象类
+     * @return java对象
+     */
+    public <E> E getObjectByPk(String tableName, Object pkValue, Class<E> clazz) throws SQLException {
+        return getObject("SELECT * FROM " + tableName + " WHERE id= ?", new Object[]{pkValue}, clazz);
     }
 
     /**
@@ -101,10 +129,21 @@ public class DB {
     /**
      * 获取单条记录
      *
+     * @param tableName 表名
+     * @param pkValue   主键值
+     * @return 单条记录
+     */
+    public Map<String, Object> getByPk(String tableName, Object pkValue) throws SQLException, IOException {
+        return get("SELECT * FROM " + tableName + " WHERE id= ?", new Object[]{pkValue});
+    }
+
+    /**
+     * 获取单条记录
+     *
      * @param sql SQL
      * @return 单条记录
      */
-    public Map<String, Object> get(String sql) throws SQLException {
+    public Map<String, Object> get(String sql) throws SQLException, IOException {
         return get(sql, null);
     }
 
@@ -115,10 +154,30 @@ public class DB {
      * @param params 参数
      * @return 单条记录
      */
-    public Map<String, Object> get(String sql, Object[] params) throws SQLException {
+    public Map<String, Object> get(String sql, Object[] params) throws SQLException, IOException {
         return DBExecutor.get(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
+    /**
+     * 删除单条记录
+     *
+     * @param tableName 表名
+     * @param pkValue   主键值
+     * @return 单条记录
+     */
+    public Integer deleteByPk(String tableName, Object pkValue) throws SQLException {
+        return update("DELETE FROM " + tableName + " WHERE id= ?", new Object[]{pkValue});
+    }
+
+    /**
+     * 删除所有记录
+     *
+     * @param tableName 表名
+     * @return 单条记录
+     */
+    public Integer deleteAll(String tableName) throws SQLException {
+        return update("DELETE FROM " + tableName, null);
+    }
 
     /**
      * 获取多条记录（带分页）
@@ -174,7 +233,7 @@ public class DB {
      * @return 记录数
      */
     public long count(String sql) throws SQLException {
-        return count(sql,null);
+        return count(sql, null);
     }
 
     /**
@@ -186,6 +245,28 @@ public class DB {
      */
     public long count(String sql, Object[] params) throws SQLException {
         return DBExecutor.count(sql, params, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
+    }
+
+
+    /**
+     * 保存记录
+     *
+     * @param tableName 表名
+     * @param values    值列表
+     */
+    public int save(String tableName, Map<String, Object> values) throws SQLException {
+        return DBExecutor.updateModel(tableName, values, getConnection(dsCode), isCloseConnection());
+    }
+
+    /**
+     * 保存记录
+     *
+     * @param tableName 表名
+     * @param pkValue   主键值
+     * @param values    值列表
+     */
+    public int update(String tableName, Object pkValue, Map<String, Object> values) throws SQLException {
+        return DBExecutor.updateModel(tableName, pkValue, values, getConnection(dsCode), isCloseConnection());
     }
 
     /**
@@ -218,10 +299,10 @@ public class DB {
     }
 
     public List<Meta> getMetaData(String tableName) throws SQLException {
-        return DBExecutor.getMetaData(tableName,getConnection(dsCode));
+        return DBExecutor.getMetaData(tableName, getConnection(dsCode));
     }
 
-    public Meta getMetaData(String tableName,String fieldName) throws SQLException {
+    public Meta getMetaData(String tableName, String fieldName) throws SQLException {
         return DBExecutor.getMetaData(tableName, fieldName, getConnection(dsCode));
     }
 
@@ -246,6 +327,23 @@ public class DB {
     public void rollback() {
         Transaction.rollback();
         transactionConnection = null;
+    }
+
+    public static String convertClob(Clob clob) throws SQLException, IOException {
+        StringBuffer value = new StringBuffer();
+        String line;
+        if (clob != null) {
+            Reader reader = clob.getCharacterStream();
+            BufferedReader br = new BufferedReader(reader);
+            while ((line = br.readLine()) != null) {
+                value.append(line + "\r\n");
+            }
+        }
+        if (value.length() >= 2) {
+            return value.substring(0, value.length() - 2);
+        } else {
+            return "";
+        }
     }
 
     private ConnectionWrap getConnection(String dsCode) {

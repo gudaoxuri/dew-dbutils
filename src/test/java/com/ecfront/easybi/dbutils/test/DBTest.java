@@ -9,7 +9,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -51,7 +53,7 @@ public class DBTest {
         Assert.assertEquals(result, 5);
     }
 
-    private void testGet(DB db) throws SQLException {
+    private void testGet(DB db) throws SQLException, IOException {
         Map<String, Object> result = db.get("select * from user where id=?", new Object[]{1});
         Assert.assertEquals(result.get("id"), 1);
     }
@@ -120,7 +122,7 @@ public class DBTest {
     }
 
     @Test
-    public void testFlow() throws SQLException {
+    public void testFlow() throws SQLException, IOException {
         DB db = new DB();
         testCreateTable(db);
         testUpdate(db);
@@ -193,6 +195,28 @@ public class DBTest {
         testCreateTable(multiDB);
         testUpdate(multiDB);
         Assert.assertEquals(multiDB.count("select * from user"), 1);
+    }
+
+    @Test
+    public void testCreateAndUpdate() throws SQLException, IOException {
+        DB db = new DB();
+        Map<String, String> fields = new HashMap<String, String>();
+        fields.put("id", "long");
+        fields.put("name", "String");
+        fields.put("age", "Int");
+        fields.put("addr", "String");
+        db.createTableIfNotExist("test", fields, "id");
+        Map<String, Object> values = new HashMap<String, Object>();
+        values.put("id", 100);
+        values.put("name", "gudaoxuri");
+        values.put("age", 29);
+        values.put("addr", "浙江杭州");
+        db.save("test", values);
+        values.put("name", "孤岛旭日");
+        db.update("test", 100, values);
+        Assert.assertEquals(db.getByPk("test", 100).get("name"), "孤岛旭日");
+        db.deleteByPk("test", 100);
+        Assert.assertEquals(db.getByPk("test", 100), null);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DBTest.class);

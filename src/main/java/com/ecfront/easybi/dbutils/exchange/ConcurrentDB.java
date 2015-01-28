@@ -3,6 +3,7 @@ package com.ecfront.easybi.dbutils.exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -211,9 +212,9 @@ public class ConcurrentDB {
                 public void run() {
                     try {
                         result.put(entry.getKey(), db.get(entry.getValue(), params));
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         logger.warn("get execute error..", e);
-                    } finally {
+                    }  finally {
                         signal.countDown();
                     }
                 }

@@ -1,9 +1,7 @@
 package com.ecfront.easybi.dbutils.inner.dialect;
 
-/**
- * Created by sunisle on 2014/10/28.
- */
-public class DialectHelper {
+
+public class DialectFactory {
 
     public static Dialect parseDialect(String driver) {
         DialectType type = getDialectType(driver);
