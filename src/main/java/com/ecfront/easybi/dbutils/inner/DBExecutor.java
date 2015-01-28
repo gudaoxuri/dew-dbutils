@@ -98,9 +98,11 @@ public class DBExecutor {
                 closeConnection(cw.conn);
             }
         }
-        for(Map.Entry<String,Object> entry:map.entrySet()){
-            if(entry.getValue() instanceof Clob){
-                entry.setValue(DB.convertClob((Clob)entry.getValue()));
+        if(map!=null) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() instanceof Clob) {
+                    entry.setValue(DB.convertClob((Clob) entry.getValue()));
+                }
             }
         }
         return map;
