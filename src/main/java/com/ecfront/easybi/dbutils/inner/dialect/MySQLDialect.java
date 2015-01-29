@@ -21,16 +21,26 @@ public class MySQLDialect implements Dialect {
         for (Map.Entry<String, String> field : fields.entrySet()) {
             String f = field.getValue().toLowerCase();
             String t;
-            if (f.equals("int") || f.equals("integer") || f.equals("long")) {
+            if (f.equals("int") || f.equals("integer")) {
                 t = "INT";
+            } else if (f.equals("long")) {
+                t = "BIGINT";
+            } else if (f.equals("short")) {
+                t = "SMALLINT";
             } else if (f.equals("string")) {
                 t = "VARCHAR(65535)";
+            } else if (f.equals("bool") || f.equals("boolean")) {
+                t = "BOOLEAN";
             } else if (f.equals("float")) {
                 t = "FLOAT";
             } else if (f.equals("double")) {
                 t = "DOUBLE";
             } else if (f.equals("char")) {
                 t = "CHAR";
+            } else if (f.equals("date")) {
+                t = "TIMESTAMP";
+            } else if (f.equals("uuid")) {
+                t = "UUID";
             } else if (f.equals("decimal")) {
                 t = "DECIMAL";
             } else {

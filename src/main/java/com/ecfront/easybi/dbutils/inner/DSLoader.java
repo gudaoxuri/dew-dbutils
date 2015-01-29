@@ -36,7 +36,7 @@ public class DSLoader {
         cw.type = DialectFactory.getDialectType(dsEntity.driver);
         try {
             if (dsEntity.poolSupport) {
-                cw.conn=MULTI_DS.get(dsCode).getConnection();
+                cw.conn = MULTI_DS.get(dsCode).getConnection();
                 if (cw.conn.isClosed()) {
                     //Re-setting connection when connection was close.
                     synchronized (DSLoader.class) {
@@ -64,10 +64,12 @@ public class DSLoader {
 
     private static void loadMultiDS() {
         List<Map<String, Object>> result = null;
-        try {
-            result = DBExecutor.find(ConfigContainer.MULTI_DS_QUERY, null, getConnection(null), true);
-        } catch (Exception e) {
-            logger.error("Multi DS load error : " + e);
+        if (ConfigContainer.MULTI_DS_QUERY != null && !"".equals(ConfigContainer.MULTI_DS_QUERY.trim())) {
+            try {
+                result = DBExecutor.find(ConfigContainer.MULTI_DS_QUERY, null, getConnection(null), true);
+            } catch (Exception e) {
+                logger.error("Multi DS load error : " + e);
+            }
         }
         if (null != result) {
             for (Map<String, Object> res : result) {
@@ -153,9 +155,9 @@ public class DSLoader {
     }
 
     private static void loadPool(DSEntity dsEntity) {
-        if(ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("druid")){
+        if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("druid")) {
             MULTI_DS.put(dsEntity.flag, loadDruidPool(dsEntity));
-        }else if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("dbcp")) {
+        } else if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("dbcp")) {
             MULTI_DS.put(dsEntity.flag, loadDBCPPool(dsEntity));
         }
         MULTI_DB_DIALECT.put(dsEntity.flag, DialectFactory.parseDialect(dsEntity.driver));

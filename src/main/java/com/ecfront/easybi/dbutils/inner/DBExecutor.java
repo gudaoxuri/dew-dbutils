@@ -73,7 +73,7 @@ public class DBExecutor {
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
-        page.recordTotal = count(pagedSql, params, cw, false, dialect);
+        page.recordTotal = count(sql, params, cw, false, dialect);
         page.pageTotal = (page.recordTotal + pageSize - 1) / pageSize;
         page.objects = find(pagedSql, params, clazz, cw, isCloseConn);
         return page;
