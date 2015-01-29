@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -17,8 +16,8 @@ public class PropertyHelper {
     private static Map<String, String> properties;
     private static String propertiesPath;
 
-    public static void setPropertiesPath(String path){
-        propertiesPath=path;
+    public static void setPropertiesPath(String path) {
+        propertiesPath = path;
     }
 
     public static String get(String name, String defaultVal) {
@@ -35,9 +34,9 @@ public class PropertyHelper {
                 if (null == properties) {
                     try {
                         properties = new HashMap<String, String>();
-                        loadProperties(propertiesPath==null?URLDecoder.decode(PropertyHelper.class.getResource("/").getPath(), "utf-8"): propertiesPath);
+                        loadProperties(propertiesPath == null ? URLDecoder.decode(PropertyHelper.class.getResource("/").getPath(), "utf-8") : propertiesPath);
                     } catch (IOException e) {
-                        logger.error("Get property error:",e);
+                        logger.error("Get property error:", e);
                     }
                 }
             }
@@ -47,6 +46,10 @@ public class PropertyHelper {
 
     private static void loadProperties(String path) throws IOException {
         File[] files = new File(path).listFiles();
+        if (files == null) {
+            logger.error("Config file not exist in :" + path);
+            throw new IOException("Config file not exist in :" + path);
+        }
         for (File file : files) {
             if (file.getName().endsWith("properties")) {
                 loadProperties(file);
@@ -60,8 +63,8 @@ public class PropertyHelper {
         Properties prop = new Properties();
         prop.load(new FileInputStream(file));
         String key;
-        for (Iterator it = prop.keySet().iterator(); it.hasNext(); ) {
-            key = (String) it.next();
+        for (Object o : prop.keySet()) {
+            key = (String) o;
             properties.put(key.trim(), ((String) prop.get(key)).trim());
         }
     }

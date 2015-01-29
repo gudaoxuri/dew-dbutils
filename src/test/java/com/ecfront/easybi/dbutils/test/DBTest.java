@@ -199,6 +199,11 @@ public class DBTest {
 
     @Test
     public void testCreateAndUpdate() throws SQLException, IOException {
+        String testPath = this.getClass().getResource("/").getPath();
+        if (System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1) {
+            testPath = testPath.substring(1);
+        }
+        DS.setConfigPath(testPath);
         DB db = new DB();
         Map<String, String> fields = new HashMap<String, String>();
         fields.put("id", "long");
