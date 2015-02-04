@@ -51,7 +51,7 @@ public class MySQLDialect implements Dialect {
         if (pk != null && pk.trim() != "") {
             return sb.append("primary key(" + pk.trim() + ") )").toString();
         } else {
-            return sb.substring(0, sb.length() - 1).toString();
+            return sb.substring(0, sb.length() - 1).toString()+")";
         }
     }
 }
