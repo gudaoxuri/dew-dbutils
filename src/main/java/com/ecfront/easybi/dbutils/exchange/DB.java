@@ -127,6 +127,28 @@ public class DB {
     }
 
     /**
+     * 判断记录是否存在
+     *
+     * @param tableName 表名
+     * @param pkValue   主键值
+     * @return 是否存在
+     */
+    public boolean containByKey(String tableName, Object pkValue) throws SQLException, IOException {
+        return get("SELECT id FROM " + tableName + " WHERE id= ?", new Object[]{pkValue}).size() != 0;
+    }
+
+    /**
+     * 判断记录是否存在
+     *
+     * @param sql    SQL
+     * @param params 参数
+     * @return 是否存在
+     */
+    public boolean contain(String sql, Object[] params) throws SQLException, IOException {
+        return find(sql, params).size() != 0;
+    }
+
+    /**
      * 获取单条记录
      *
      * @param tableName 表名
@@ -296,6 +318,15 @@ public class DB {
      */
     public int[] batch(String sql, Object[][] params) throws SQLException {
         return DBExecutor.batch(sql, params, getConnection(dsCode), isCloseConnection());
+    }
+
+    /**
+     * 批量更新记录
+     *
+     * @param sqls    SQL
+     */
+    public void batch(Map<String,Object[]> sqls) throws SQLException {
+         DBExecutor.batch(sqls, getConnection(dsCode), isCloseConnection());
     }
 
     public List<Meta> getMetaData(String tableName) throws SQLException {

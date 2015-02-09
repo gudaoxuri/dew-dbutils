@@ -98,7 +98,7 @@ public class DBExecutor {
                 closeConnection(cw.conn);
             }
         }
-        if(map!=null) {
+        if (map != null) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 if (entry.getValue() instanceof Clob) {
                     entry.setValue(DB.convertClob((Clob) entry.getValue()));
@@ -217,6 +217,34 @@ public class DBExecutor {
         } finally {
             if (isCloseConn) {
                 closeConnection(cw.conn);
+            }
+        }
+    }
+
+    public static void batch(Map<String, Object[]> sqls, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
+        if (cw.type == DialectType.SPARK_SQL) {
+            throw new SQLException("SparkSQL don't support [batch] method.");
+        }
+        for (Map.Entry<String, Object[]> entry : sqls.entrySet()) {
+            try {
+                if (null == entry.getValue()) {
+                    queryRunner.update(cw, entry.getKey());
+                } else {
+                    queryRunner.update(cw, entry.getKey(), entry.getValue());
+                }
+            } catch (SQLException e) {
+                try {
+                    cw.conn.rollback();
+                } catch (SQLException e1) {
+                    logger.error("Connection error : " + entry.getKey(), e1);
+                    throw e1;
+                }
+                logger.error("Batch error : " + entry.getKey(), e);
+                throw e;
+            } finally {
+                if (isCloseConn) {
+                    closeConnection(cw.conn);
+                }
             }
         }
     }
