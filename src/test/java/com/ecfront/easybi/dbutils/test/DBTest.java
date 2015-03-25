@@ -20,11 +20,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DBTest {
 
     private void testDropTable(DB db) throws SQLException {
-        db.ddl("drop table user");
+        db.ddl("drop table tuser");
     }
 
     private void testCreateTable(DB db) throws SQLException {
-        db.ddl("create table user(" +
+        db.ddl("create table tuser(" +
                 "id int not null," +
                 "name varchar(255)," +
                 "password varchar(255)," +
@@ -36,11 +36,11 @@ public class DBTest {
     }
 
     private void testUpdate(DB db) throws SQLException {
-        db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
+        db.update("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
     }
 
     private void testBatch(DB db) throws SQLException {
-        db.batch("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
+        db.batch("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
                 {2, "李四", "123", 22, 2333.22, true},
                 {3, "王五1", "123", 22, 2333.22, false},
                 {4, "王五2", "123", 22, 2333.22, false},
@@ -49,19 +49,19 @@ public class DBTest {
     }
 
     private void testCount(DB db) throws SQLException {
-        long result = db.count("select * from user");
+        long result = db.count("select * from tuser");
         Assert.assertEquals(result, 5);
     }
 
     private void testGet(DB db) throws SQLException, IOException {
-        Map<String, Object> result = db.get("select * from user where id=?", new Object[]{1});
+        Map<String, Object> result = db.get("select * from tuser where id=?", new Object[]{1});
         Assert.assertEquals(result.get("id"), 1);
     }
 
     private void testFind(DB db) throws SQLException {
-        List<Map<String, Object>> result = db.find("select * from user where age=?", new Object[]{22});
+        List<Map<String, Object>> result = db.find("select * from tuser where age=?", new Object[]{22});
         Assert.assertEquals(result.size(), 4);
-        Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
+        Page<Map<String, Object>> page = db.find("select * from tuser", 1, 2);
         Assert.assertEquals(page.recordTotal, 5);
         Assert.assertEquals(page.pageTotal, 3);
 
@@ -69,15 +69,15 @@ public class DBTest {
 
     private void testGetObject(DB db) throws SQLException {
         logger.debug("testGetObject.");
-        User user = db.getObject("select * from user where id= ? ", new Object[]{1}, User.class);
+        User user = db.getObject("select * from tuser where id= ? ", new Object[]{1}, User.class);
         Assert.assertEquals(user.getId(), 1);
     }
 
     private void testFindObjects(DB db) throws SQLException {
-        List<User> users = db.findObjects("select * from user where age=?", new Object[]{22}, User.class);
+        List<User> users = db.findObjects("select * from tuser where age=?", new Object[]{22}, User.class);
         Assert.assertEquals(users.size(), 4);
 
-        Page<Map<String, Object>> page = db.find("select * from user", 1, 2);
+        Page<Map<String, Object>> page = db.find("select * from tuser", 1, 2);
         Assert.assertEquals(page.recordTotal, 5);
         Assert.assertEquals(page.pageTotal, 3);
     }
@@ -86,9 +86,9 @@ public class DBTest {
     public void testMeta() throws Exception {
         DB db = new DB();
         testCreateTable(db);
-        List<Meta> metas = db.getMetaData("user");
+        List<Meta> metas = db.getMetaData("tuser");
         Assert.assertEquals(metas.get(0).label, "ID");
-        Meta meta = db.getMetaData("user", "name");
+        Meta meta = db.getMetaData("tuser", "name");
         Assert.assertEquals(meta.label, "NAME");
         testDropTable(db);
     }
@@ -145,25 +145,25 @@ public class DBTest {
         db.open();
         testUpdate(db);
         db.rollback();
-        Assert.assertEquals(db.count("select * from user"), 0);
+        Assert.assertEquals(db.count("select * from tuser"), 0);
 
         //error test
         db.open();
         testUpdate(db);
         //has error
         try {
-            db.update("insert into user (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
+            db.update("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22});
             db.commit();
         } catch (SQLException e) {
             logger.warn("Has Error!");
         }
-        Assert.assertEquals(db.count("select * from user"), 0);
+        Assert.assertEquals(db.count("select * from tuser"), 0);
 
         //commit test
         db.open();
         testUpdate(db);
         db.commit();
-        Assert.assertEquals(db.count("select * from user"), 1);
+        Assert.assertEquals(db.count("select * from tuser"), 1);
 
         testDropTable(db);
     }
@@ -194,7 +194,7 @@ public class DBTest {
         DB multiDB = new DB("ds1");
         testCreateTable(multiDB);
         testUpdate(multiDB);
-        Assert.assertEquals(multiDB.count("select * from user"), 1);
+        Assert.assertEquals(multiDB.count("select * from tuser"), 1);
     }
 
     @Test

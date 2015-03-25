@@ -1,6 +1,12 @@
-## Encapsulate dbutils, Provides dynamic multi-data source(Oracle、Mysql、H2、Spark SQL) , multi-type of database , transaction , paging  and concurrent.
+## Encapsulate dbutils, Provides dynamic multi-data source(Oracle、Mysql、PostgreSQL、H2、Spark SQL) , multi-type of database , transaction , paging  and concurrent.
 
 ### How to use
+
+    <dependency>
+        <groupId>com.ecfront</groupId>
+        <artifactId>ez-dbutils</artifactId>
+        <version>2.4</version>
+    </dependency>
 
 Add the following configuration in the properties file  :
 

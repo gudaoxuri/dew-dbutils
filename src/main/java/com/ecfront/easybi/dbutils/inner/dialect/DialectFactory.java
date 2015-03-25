@@ -12,6 +12,8 @@ public class DialectFactory {
                 return new H2Dialect();
             case MYSQL:
                 return new MySQLDialect();
+            case POSTGRE:
+                return new PostgreDialect();
             case SPARK_SQL:
                 return new HiveDialect();
         }
@@ -25,7 +27,9 @@ public class DialectFactory {
             return DialectType.H2;
         } else if (driver.indexOf("mysql") != -1) {
             return DialectType.MYSQL;
-        } else if (driver.indexOf("HiveDriver") != -1) {
+        } else if (driver.indexOf("postgresql") != -1) {
+            return DialectType.POSTGRE;
+        }else if (driver.indexOf("HiveDriver") != -1) {
             return DialectType.SPARK_SQL;
         }
         return null;

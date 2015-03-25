@@ -5,6 +5,6 @@ package com.ecfront.easybi.dbutils.inner.dialect;
  */
 public enum DialectType {
 
-    ORACLE,MYSQL,H2,SPARK_SQL
+    ORACLE,MYSQL,POSTGRE,H2,SPARK_SQL
 
 }
