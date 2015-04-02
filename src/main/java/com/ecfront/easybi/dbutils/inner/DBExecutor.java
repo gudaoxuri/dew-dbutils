@@ -314,6 +314,7 @@ public class DBExecutor {
 
     public static void ddl(String sql, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
         try {
+            logger.debug("Execute DDL : " + sql);
             queryRunner.update(cw, sql);
         } catch (SQLException e) {
             try {

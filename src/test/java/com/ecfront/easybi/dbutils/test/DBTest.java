@@ -10,10 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -87,9 +86,9 @@ public class DBTest {
         DB db = new DB();
         testCreateTable(db);
         List<Meta> metas = db.getMetaData("tuser");
-        Assert.assertEquals(metas.get(0).label, "ID");
+        Assert.assertEquals(metas.get(0).label, "id");
         Meta meta = db.getMetaData("tuser", "name");
-        Assert.assertEquals(meta.label, "NAME");
+        Assert.assertEquals(meta.label, "name");
         testDropTable(db);
     }
 
@@ -210,16 +209,40 @@ public class DBTest {
         fields.put("name", "String");
         fields.put("age", "Int");
         fields.put("addr", "String");
-        db.createTableIfNotExist("test", fields, "id");
+        fields.put("height1", "Float");
+        fields.put("height2", "Double");
+        fields.put("createTime", "Date");
+        fields.put("asset", "BigDecimal");
+        fields.put("addr", "String");
+        fields.put("enable", "Boolean");
+        fields.put("txt", "text");
+        db.createTableIfNotExist("test", "测试表", fields, new HashMap<String, String>() {{
+            put("name", "姓名");
+            put("age", "年龄");
+        }}, new ArrayList<String>() {{
+            add("name");
+        }}, new ArrayList<String>() {{
+            add("name");
+        }}, "id");
         Map<String, Object> values = new HashMap<String, Object>();
         values.put("id", 100);
         values.put("name", "gudaoxuri");
         values.put("age", 29);
+        values.put("height1", 1.1);
+        values.put("height2", 1.1d);
+        values.put("asset", new BigDecimal(2.343));
+        values.put("enable", true);
         values.put("addr", "浙江杭州");
+      //  values.put("createTime", new java.sql.Date());
+        values.put("txt", "浙江杭州");
         db.save("test", values);
         values.put("name", "孤岛旭日");
         db.update("test", 100, values);
-        Assert.assertEquals(db.getByPk("test", 100).get("name"), "孤岛旭日");
+        Map<String,Object> res=db.getByPk("test", 100);
+        Assert.assertEquals(res.get("name"), "孤岛旭日");
+        Assert.assertEquals(res.get("age"), 29);
+        Assert.assertEquals(res.get("height1"), 1.1);
+        Assert.assertEquals(res.get("height2"), 1.1);
         db.deleteByPk("test", 100);
         Assert.assertEquals(db.getByPk("test", 100), null);
     }

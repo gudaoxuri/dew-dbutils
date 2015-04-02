@@ -1,6 +1,7 @@
 package com.ecfront.easybi.dbutils.test;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 public class User {
 
@@ -8,7 +9,11 @@ public class User {
     private String name;
     private String password;
     private int age;
+    private float height1;
+    private double height2;
+    private Date createTime;
     private BigDecimal asset;
+    private String txt;
     private boolean enable;
 
     public long getId() {
@@ -57,5 +62,37 @@ public class User {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public float getHeight1() {
+        return height1;
+    }
+
+    public void setHeight1(float height1) {
+        this.height1 = height1;
+    }
+
+    public double getHeight2() {
+        return height2;
+    }
+
+    public void setHeight2(double height2) {
+        this.height2 = height2;
+    }
+
+    public String getTxt() {
+        return txt;
+    }
+
+    public void setTxt(String txt) {
+        this.txt = txt;
     }
 }

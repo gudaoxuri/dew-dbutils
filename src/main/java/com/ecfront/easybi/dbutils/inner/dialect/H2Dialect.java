@@ -1,6 +1,9 @@
 package com.ecfront.easybi.dbutils.inner.dialect;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public class H2Dialect implements Dialect {
@@ -16,7 +19,13 @@ public class H2Dialect implements Dialect {
     }
 
     @Override
-    public String createTableIfNotExist(String tableName, Map<String, String> fields, String pk) throws SQLException {
+    public String getTableInfo(String tableName) throws SQLException {
+        //TODO
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String createTableIfNotExist(String tableName, String tableDesc, Map<String, String> fields, Map<String, String> fieldsDesc, List<String> indexFields, List<String> uniqueFields, String pkField) throws SQLException {
         StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " ( ");
         for (Map.Entry<String, String> field : fields.entrySet()) {
             String f = field.getValue().toLowerCase();
@@ -48,10 +57,11 @@ public class H2Dialect implements Dialect {
             }
             sb.append(field.getKey() + " " + t + " ,");
         }
-        if (pk != null && pk.trim() != "") {
-            return sb.append("primary key(" + pk.trim() + ") )").toString();
+        if (pkField != null && pkField.trim() != "") {
+            return sb.append("primary key(" + pkField.trim() + ") )").toString();
         } else {
             return sb.substring(0, sb.length() - 1).toString()+")";
         }
+        //TODO
     }
 }

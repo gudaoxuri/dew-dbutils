@@ -5,6 +5,7 @@ public class DialectFactory {
 
     public static Dialect parseDialect(String driver) {
         DialectType type = getDialectType(driver);
+        assert type != null;
         switch (type) {
             case ORACLE:
                 return new OracleDialect();
@@ -21,15 +22,15 @@ public class DialectFactory {
     }
 
     public static DialectType getDialectType(String driver) {
-        if (driver.indexOf("OracleDriver") != -1) {
+        if (driver.contains("OracleDriver")) {
             return DialectType.ORACLE;
-        } else if (driver.indexOf("h2") != -1) {
+        } else if (driver.contains("h2")) {
             return DialectType.H2;
-        } else if (driver.indexOf("mysql") != -1) {
+        } else if (driver.contains("mysql")) {
             return DialectType.MYSQL;
-        } else if (driver.indexOf("postgresql") != -1) {
+        } else if (driver.contains("postgresql")) {
             return DialectType.POSTGRE;
-        }else if (driver.indexOf("HiveDriver") != -1) {
+        } else if (driver.contains("HiveDriver")) {
             return DialectType.SPARK_SQL;
         }
         return null;

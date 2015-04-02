@@ -24,12 +24,20 @@ public class DB {
     /**
      * 创建表
      *
-     * @param tableName 表名
-     * @param fields    表字段
-     * @param pk        主键名
+     * @param tableName    表名
+     * @param tableDesc    表说明
+     * @param fields       表字段（字段名-> 类型）
+     * @param fieldsDesc   字段说明
+     * @param indexFields  索引字段
+     * @param uniqueFields 唯一值字段
+     * @param pkField      主键字段
+     * @throws SQLException
      */
-    public void createTableIfNotExist(String tableName, Map<String, String> fields, String pk) throws SQLException {
-        DBExecutor.ddl(getDialect(dsCode).createTableIfNotExist(tableName, fields, pk), getConnection(dsCode), isCloseConnection());
+    public void createTableIfNotExist(String tableName, String tableDesc, Map<String, String> fields, Map<String, String> fieldsDesc, List<String> indexFields, List<String> uniqueFields, String pkField) throws SQLException {
+        tableName = tableName.toLowerCase();
+        if (find(getDialect(dsCode).getTableInfo(tableName)).isEmpty()) {
+            DBExecutor.ddl(getDialect(dsCode).createTableIfNotExist(tableName, tableDesc, fields, fieldsDesc, indexFields, uniqueFields, pkField), getConnection(dsCode), isCloseConnection());
+        }
     }
 
     /**
@@ -323,10 +331,10 @@ public class DB {
     /**
      * 批量更新记录
      *
-     * @param sqls    SQL
+     * @param sqls SQL
      */
-    public void batch(Map<String,Object[]> sqls) throws SQLException {
-         DBExecutor.batch(sqls, getConnection(dsCode), isCloseConnection());
+    public void batch(Map<String, Object[]> sqls) throws SQLException {
+        DBExecutor.batch(sqls, getConnection(dsCode), isCloseConnection());
     }
 
     public List<Meta> getMetaData(String tableName) throws SQLException {

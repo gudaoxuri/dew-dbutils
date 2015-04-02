@@ -33,7 +33,7 @@ public class PropertyHelper {
             synchronized (PropertyHelper.class) {
                 if (null == properties) {
                     try {
-                        properties = new HashMap<String, String>();
+                        properties = new HashMap<>();
                         loadProperties(propertiesPath == null ? URLDecoder.decode(PropertyHelper.class.getResource("/").getPath(), "utf-8") : propertiesPath);
                     } catch (IOException e) {
                         logger.error("Get property error:", e);
