@@ -69,7 +69,7 @@ public class DBExecutor {
         if (cw.type == DialectType.SPARK_SQL) {
             throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
         }
-        Page<E> page = new Page<E>();
+        Page<E> page = new Page<>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
@@ -180,7 +180,7 @@ public class DBExecutor {
             valueList.append("?,");
             params.add(field.getValue());
         }
-        sb.append(keys.substring(0, keys.length() - 1) + ") VALUES ( " + valueList.substring(0, valueList.length() - 1) + " )");
+        sb.append(keys.substring(0, keys.length() - 1)).append(") VALUES ( ").append(valueList.substring(0, valueList.length() - 1)).append(" )");
         return update(sb.toString(), params.toArray(new Object[params.size()]), connection, closeConnection);
     }
 
