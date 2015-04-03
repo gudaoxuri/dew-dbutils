@@ -3,6 +3,7 @@ package com.ecfront.easybi.dbutils.inner.dialect;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PostgreDialect implements Dialect {
 
@@ -18,7 +19,7 @@ public class PostgreDialect implements Dialect {
 
     @Override
     public String getTableInfo(String tableName) throws SQLException {
-        return "SELECT * FROM pg_tables t where t.tablename='"+tableName+"'";
+        return "SELECT * FROM pg_tables t where t.tablename='" + tableName + "'";
     }
 
     @Override
@@ -27,50 +28,65 @@ public class PostgreDialect implements Dialect {
         for (Map.Entry<String, String> field : fields.entrySet()) {
             String f = field.getValue().toLowerCase();
             String t;
-            if (f.equals("int") || f.equals("integer") || f.equals("short")) {
-                t = "integer";
-            } else if (f.equals("long")) {
-                t = "bigint";
-            } else if (f.equals("string")) {
-                t = "character varying(65535)";
-            } else if (f.equals("text")) {
-                t = "text";
-            } else if (f.equals("bool") || f.equals("boolean")) {
-                t = "boolean";
-            } else if (f.equals("float") || f.equals("double")) {
-                t = "double precision";
-            } else if (f.equals("char")) {
-                t = "character";
-            } else if (f.equals("date")) {
-                t = "date";
-            } else if (f.equals("bigdecimal") || f.equals("decimal")) {
-                t = "numeric";
-            } else {
-                throw new SQLException("Not support type:" + f);
+            switch (f) {
+                case "int":
+                case "integer":
+                case "short":
+                    t = "integer";
+                    break;
+                case "long":
+                    t = "bigint";
+                    break;
+                case "string":
+                    t = "character varying(65535)";
+                    break;
+                case "text":
+                    t = "text";
+                    break;
+                case "bool":
+                case "boolean":
+                    t = "boolean";
+                    break;
+                case "float":
+                case "double":
+                    t = "double precision";
+                    break;
+                case "char":
+                    t = "character";
+                    break;
+                case "date":
+                    t = "date";
+                    break;
+                case "bigdecimal":
+                case "decimal":
+                    t = "numeric";
+                    break;
+                default:
+                    throw new SQLException("Not support type:" + f);
             }
-            sb.append(field.getKey() + " " + t + " ,");
+            sb.append(field.getKey()).append(" ").append(t).append(" ,");
         }
         if (uniqueFields != null && !uniqueFields.isEmpty()) {
             for (String uField : uniqueFields) {
-                sb.append("CONSTRAINT \"u_" + tableName + "_" + uField + "\" UNIQUE (\"" + uField + "\"),");
+                sb.append("CONSTRAINT \"u_").append(tableName).append("_").append(uField).append("\" UNIQUE (\"").append(uField).append("\"),");
             }
         }
-        if (pkField != null && pkField.trim() != "") {
-            sb.append("primary key(" + pkField.trim() + ") );");
+        if (pkField != null && !Objects.equals(pkField.trim(), "")) {
+            sb.append("primary key(").append(pkField.trim()).append(") );");
         } else {
             sb = new StringBuilder(sb.substring(0, sb.length() - 1) + ");");
         }
         if (indexFields != null && !indexFields.isEmpty()) {
             for (String idxFields : indexFields) {
-                sb.append("CREATE INDEX \"i_" + tableName + "_" + idxFields + "\" ON \"" + tableName + "\" (\"" + idxFields + "\");");
+                sb.append("CREATE INDEX \"i_").append(tableName).append("_").append(idxFields).append("\" ON \"").append(tableName).append("\" (\"").append(idxFields).append("\");");
             }
         }
         if (tableDesc != null && !tableDesc.isEmpty()) {
-            sb.append("COMMENT ON TABLE \"" + tableName + "\" IS '" + tableDesc + "';");
+            sb.append("COMMENT ON TABLE \"").append(tableName).append("\" IS '").append(tableDesc).append("';");
         }
         if (fieldsDesc != null && !fieldsDesc.isEmpty()) {
             for (Map.Entry<String, String> field : fieldsDesc.entrySet()) {
-                sb.append("COMMENT ON COLUMN \"" + tableName + "\".\"" + field.getKey() + "\" IS '" + field.getValue() + "';");
+                sb.append("COMMENT ON COLUMN \"").append(tableName).append("\".\"").append(field.getKey()).append("\" IS '").append(field.getValue()).append("';");
             }
         }
         return sb.toString();

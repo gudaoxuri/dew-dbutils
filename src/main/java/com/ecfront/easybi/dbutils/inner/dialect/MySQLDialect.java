@@ -5,6 +5,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class MySQLDialect implements Dialect {
 
@@ -31,37 +32,51 @@ public class MySQLDialect implements Dialect {
         for (Map.Entry<String, String> field : fields.entrySet()) {
             String f = field.getValue().toLowerCase();
             String t;
-            if (f.equals("int") || f.equals("integer")) {
-                t = "INT";
-            } else if (f.equals("long")) {
-                t = "BIGINT";
-            } else if (f.equals("short")) {
-                t = "SMALLINT";
-            } else if (f.equals("string")) {
-                t = "VARCHAR(65535)";
-            } else if (f.equals("bool") || f.equals("boolean")) {
-                t = "BOOLEAN";
-            } else if (f.equals("float")) {
-                t = "FLOAT";
-            } else if (f.equals("double")) {
-                t = "DOUBLE";
-            } else if (f.equals("char")) {
-                t = "CHAR";
-            } else if (f.equals("date")) {
-                t = "TIMESTAMP";
-            } else if (f.equals("uuid")) {
-                t = "UUID";
-            } else if (f.equals("decimal")) {
-                t = "DECIMAL";
-            } else {
-                throw new SQLException("Not support type:" + f);
+            switch (f) {
+                case "int":
+                case "integer":
+                    t = "INT";
+                    break;
+                case "long":
+                    t = "BIGINT";
+                    break;
+                case "short":
+                    t = "SMALLINT";
+                    break;
+                case "string":
+                    t = "VARCHAR(65535)";
+                    break;
+                case "bool":
+                case "boolean":
+                    t = "BOOLEAN";
+                    break;
+                case "float":
+                    t = "FLOAT";
+                    break;
+                case "double":
+                    t = "DOUBLE";
+                    break;
+                case "char":
+                    t = "CHAR";
+                    break;
+                case "date":
+                    t = "TIMESTAMP";
+                    break;
+                case "uuid":
+                    t = "UUID";
+                    break;
+                case "decimal":
+                    t = "DECIMAL";
+                    break;
+                default:
+                    throw new SQLException("Not support type:" + f);
             }
-            sb.append(field.getKey() + " " + t + " ,");
+            sb.append(field.getKey()).append(" ").append(t).append(" ,");
         }
-        if (pkField != null && pkField.trim() != "") {
-            return sb.append("primary key(" + pkField.trim() + ") )").toString();
+        if (pkField != null && !Objects.equals(pkField.trim(), "")) {
+            return sb.append("primary key(").append(pkField.trim()).append(") )").toString();
         } else {
-            return sb.substring(0, sb.length() - 1).toString() + ")";
+            return sb.substring(0, sb.length() - 1) + ")";
         }
     }
 }

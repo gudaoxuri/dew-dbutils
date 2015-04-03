@@ -1,8 +1,5 @@
 package com.ecfront.easybi.dbutils.inner;
 
-/**
- * Created by 震宇 on 2014/5/9.
- */
 public class DSEntity {
 
     public String flag;

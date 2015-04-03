@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -199,12 +202,12 @@ public class DBTest {
     @Test
     public void testCreateAndUpdate() throws SQLException, IOException {
         String testPath = this.getClass().getResource("/").getPath();
-        if (System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1) {
+        if (System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS")) {
             testPath = testPath.substring(1);
         }
         DS.setConfigPath(testPath);
         DB db = new DB();
-        Map<String, String> fields = new HashMap<String, String>();
+        Map<String, String> fields = new HashMap<>();
         fields.put("id", "long");
         fields.put("name", "String");
         fields.put("age", "Int");
@@ -224,7 +227,7 @@ public class DBTest {
         }}, new ArrayList<String>() {{
             add("name");
         }}, "id");
-        Map<String, Object> values = new HashMap<String, Object>();
+        Map<String, Object> values = new HashMap<>();
         values.put("id", 100);
         values.put("name", "gudaoxuri");
         values.put("age", 29);
@@ -233,16 +236,18 @@ public class DBTest {
         values.put("asset", new BigDecimal(2.343));
         values.put("enable", true);
         values.put("addr", "浙江杭州");
-      //  values.put("createTime", new java.sql.Date());
+        //  values.put("createTime", new java.sql.Date());
         values.put("txt", "浙江杭州");
         db.save("test", values);
         values.put("name", "孤岛旭日");
         db.update("test", 100, values);
-        Map<String,Object> res=db.getByPk("test", 100);
+        Map<String, Object> res = db.getByPk("test", 100);
         Assert.assertEquals(res.get("name"), "孤岛旭日");
         Assert.assertEquals(res.get("age"), 29);
         Assert.assertEquals(res.get("height1"), 1.1);
         Assert.assertEquals(res.get("height2"), 1.1);
+        Assert.assertEquals(res.get("addr"), "浙江杭州");
+        Assert.assertEquals(res.get("txt"), "浙江杭州");
         db.deleteByPk("test", 100);
         Assert.assertEquals(db.getByPk("test", 100), null);
     }

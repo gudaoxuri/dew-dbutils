@@ -25,7 +25,7 @@ public class HiveTest {
  //   @Test
     public void testConcurrent() throws Exception {
         ConcurrentDB cdb = new ConcurrentDB(new DB());
-        Map<String, String> sqls = new HashMap<String, String>();
+        Map<String, String> sqls = new HashMap<>();
         sqls.put("江干统计", "select count(1) from test.spc_mkt_browse_label_10k where area='江干'");
         sqls.put("西湖统计", "select count(1) from test.spc_mkt_browse_label_10k where area='西湖'");
         sqls.put("上城统计", "select count(1) from test.spc_mkt_browse_label_10k where area='上城'");

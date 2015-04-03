@@ -369,13 +369,13 @@ public class DB {
     }
 
     public static String convertClob(Clob clob) throws SQLException, IOException {
-        StringBuffer value = new StringBuffer();
+        StringBuilder value = new StringBuilder();
         String line;
         if (clob != null) {
             Reader reader = clob.getCharacterStream();
             BufferedReader br = new BufferedReader(reader);
             while ((line = br.readLine()) != null) {
-                value.append(line + "\r\n");
+                value.append(line).append("\r\n");
             }
         }
         if (value.length() >= 2) {

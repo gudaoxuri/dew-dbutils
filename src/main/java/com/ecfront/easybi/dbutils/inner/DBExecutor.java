@@ -134,7 +134,7 @@ public class DBExecutor {
         if (cw.type == DialectType.SPARK_SQL) {
             throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
         }
-        Page<Map<String, Object>> page = new Page<Map<String, Object>>();
+        Page<Map<String, Object>> page = new Page<>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
         page.pageSize = pageSize;
@@ -174,9 +174,9 @@ public class DBExecutor {
         StringBuilder sb = new StringBuilder("INSERT INTO " + tableName + " ( ");
         StringBuilder keys = new StringBuilder();
         StringBuilder valueList = new StringBuilder();
-        List params = new ArrayList<Object>();
+        List params = new ArrayList<>();
         for (Map.Entry<String, Object> field : values.entrySet()) {
-            keys.append(field.getKey() + ",");
+            keys.append(field.getKey()).append(",");
             valueList.append("?,");
             params.add(field.getValue());
         }
@@ -186,7 +186,7 @@ public class DBExecutor {
 
     public static int updateModel(String tableName, Object pkValue, Map<String, Object> values, ConnectionWrap connection, boolean closeConnection) throws SQLException {
         StringBuilder sb = new StringBuilder("UPDATE " + tableName + " SET ");
-        List params = new ArrayList<Object>();
+        List params = new ArrayList<>();
         for (Map.Entry<String, Object> field : values.entrySet()) {
             sb.append(field.getKey() + "=? ,");
             params.add(field.getValue());
@@ -290,12 +290,12 @@ public class DBExecutor {
             st = cw.conn.prepareStatement("select * from " + tableName + " where 1=2");
             rs = st.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
-            List<Meta> metas = new ArrayList<Meta>();
+            List<Meta> metas = new ArrayList<>();
             for (int i = 1; i <= meta.getColumnCount(); i++) {
                 if (null != fieldName && !meta.getColumnLabel(i).equalsIgnoreCase(fieldName)) {
                     continue;
                 }
-                metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i), meta.getColumnLabel(i)));
+                metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i).toLowerCase(), meta.getColumnLabel(i).toLowerCase()));
             }
             return metas;
         } catch (SQLException e) {

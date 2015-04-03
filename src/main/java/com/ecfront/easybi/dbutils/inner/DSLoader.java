@@ -16,9 +16,9 @@ import java.util.Map;
 
 public class DSLoader {
 
-    private static final Map<String, DataSource> MULTI_DS = new HashMap<String, DataSource>();
-    private static final Map<String, Dialect> MULTI_DB_DIALECT = new HashMap<String, Dialect>();
-    private static final Map<String, DSEntity> MULTI_DS_ENTITY = new HashMap<String, DSEntity>();
+    private static final Map<String, DataSource> MULTI_DS = new HashMap<>();
+    private static final Map<String, Dialect> MULTI_DB_DIALECT = new HashMap<>();
+    private static final Map<String, DSEntity> MULTI_DS_ENTITY = new HashMap<>();
 
     public static void reload() {
         MULTI_DS.clear();
@@ -150,7 +150,7 @@ public class DSLoader {
         dsEntity.removeAbandonedTimeoutMillis = ConfigContainer.DB_POOL_REMOVE_ABANDONED_TIMEOUT;
         dsEntity.timeBetweenEvictionRunsMillis = ConfigContainer.DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
         dsEntity.minEvictableIdleTimeMillis = ConfigContainer.DB_POOL_MIN_EVICTABLE_IDLE_TIME;
-        MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
+        MULTI_DS_ENTITY.put(null, dsEntity);
         loadPool(dsEntity);
     }
 
@@ -174,7 +174,7 @@ public class DSLoader {
         ds.setInitialSize(dsEntity.initialSize);
         ds.setMaxActive(dsEntity.maxActive);
         ds.setMinIdle(dsEntity.minIdle);
-        ds.setMaxIdle(dsEntity.maxIdle);
+        //ds.setMaxIdle(dsEntity.maxIdle);
         ds.setMaxWait(dsEntity.maxWait);
         ds.setRemoveAbandoned(dsEntity.removeAbandoned);
         ds.setRemoveAbandonedTimeoutMillis(dsEntity.removeAbandonedTimeoutMillis);

@@ -70,7 +70,7 @@ public class ConcurrentDB {
      * @return java对象集合
      */
     public <E> Map<String, E> getObjects(final Map<String, String> sqls, final Object[] params, final Class<E> clazz) throws SQLException {
-        final Map<String, E> result = new HashMap<String, E>();
+        final Map<String, E> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -114,7 +114,7 @@ public class ConcurrentDB {
      * @return java对象集合
      */
     public <E> Map<String, List<E>> findObjects(final Map<String, String> sqls, final Object[] params, final Class<E> clazz) throws SQLException {
-        final Map<String, List<E>> result = new HashMap<String, List<E>>();
+        final Map<String, List<E>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -162,7 +162,7 @@ public class ConcurrentDB {
      * @return java对象集合（带分页）
      */
     public <E> Map<String, Page<E>> findObjects(final Map<String, String> sqls, final Object[] params, final long pageNumber, final long pageSize, final Class<E> clazz) throws SQLException {
-        final Map<String, Page<E>> result = new HashMap<String, Page<E>>();
+        final Map<String, Page<E>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -204,7 +204,7 @@ public class ConcurrentDB {
      * @return 单条记录集合
      */
     public Map<String, Map<String, Object>> get(final Map<String, String> sqls, final Object[] params) throws SQLException {
-        final Map<String, Map<String, Object>> result = new HashMap<String, Map<String, Object>>();
+        final Map<String, Map<String, Object>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -247,7 +247,7 @@ public class ConcurrentDB {
      * @return 多条记录集合（带分页）
      */
     public Map<String, List<Map<String, Object>>> find(final Map<String, String> sqls, final Object[] params) throws SQLException {
-        final Map<String, List<Map<String, Object>>> result = new HashMap<String, List<Map<String, Object>>>();
+        final Map<String, List<Map<String, Object>>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -294,7 +294,7 @@ public class ConcurrentDB {
      * @return 多条记录集合（带分页）
      */
     public Map<String, Page<Map<String, Object>>> find(final Map<String, String> sqls, final Object[] params, final int pageNumber, final int pageSize) throws SQLException {
-        final Map<String, Page<Map<String, Object>>> result = new HashMap<String, Page<Map<String, Object>>>();
+        final Map<String, Page<Map<String, Object>>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -336,7 +336,7 @@ public class ConcurrentDB {
      * @return 记录数集合
      */
     public Map<String, Long> count(final Map<String, String> sqls, final Object[] params) throws SQLException {
-        final Map<String, Long> result = new HashMap<String, Long>();
+        final Map<String, Long> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -376,7 +376,7 @@ public class ConcurrentDB {
      * @param params 参数
      */
     public Map<String, Integer> update(final Map<String, String> sqls, final Object[] params) throws SQLException {
-        final Map<String, Integer> result = new HashMap<String, Integer>();
+        final Map<String, Integer> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {
@@ -407,7 +407,7 @@ public class ConcurrentDB {
      * @param params 参数
      */
     public Map<String, int[]> batch(final Map<String, String> sqls, final Object[][] params) throws SQLException {
-        final Map<String, int[]> result = new HashMap<String, int[]>();
+        final Map<String, int[]> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
             executorService.execute(new Runnable() {

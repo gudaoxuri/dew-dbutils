@@ -59,7 +59,7 @@ public class Transaction {
         }
     }
 
-    private static final ThreadLocal<ConnectionWrap> threadLocalConnection = new ThreadLocal<ConnectionWrap>();
+    private static final ThreadLocal<ConnectionWrap> threadLocalConnection = new ThreadLocal<>();
 
     private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 }
