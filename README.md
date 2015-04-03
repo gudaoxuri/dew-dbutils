@@ -5,7 +5,7 @@
     <dependency>
         <groupId>com.ecfront</groupId>
         <artifactId>ez-dbutils</artifactId>
-        <version>2.4</version>
+        <version>2.5.1</version>
     </dependency>
 
 Add the following configuration in the properties file  :
