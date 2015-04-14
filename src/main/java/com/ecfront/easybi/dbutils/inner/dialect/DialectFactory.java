@@ -14,7 +14,7 @@ public class DialectFactory {
             case MYSQL:
                 return new MySQLDialect();
             case POSTGRE:
-                return new PostgreDialect();
+                return new PostgresDialect();
             case SPARK_SQL:
                 return new HiveDialect();
         }
