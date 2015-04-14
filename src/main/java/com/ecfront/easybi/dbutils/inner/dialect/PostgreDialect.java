@@ -29,6 +29,9 @@ public class PostgreDialect implements Dialect {
             String f = field.getValue().toLowerCase();
             String t;
             switch (f) {
+                case "seq":
+                    t = "serial";
+                    break;
                 case "int":
                 case "integer":
                 case "short":
