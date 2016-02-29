@@ -26,12 +26,12 @@ public class DB {
      *
      * @param tableName    表名
      * @param tableDesc    表说明
-     * @param fields       表字段（字段名-> 类型）
+     * @param fields       表字段（字段名 - 类型）
      * @param fieldsDesc   字段说明
      * @param indexFields  索引字段
      * @param uniqueFields 唯一值字段
      * @param pkField      主键字段
-     * @throws SQLException
+     * @throws SQLException SQL错误
      */
     public void createTableIfNotExist(String tableName, String tableDesc, Map<String, String> fields, Map<String, String> fieldsDesc, List<String> indexFields, List<String> uniqueFields, String pkField) throws SQLException {
         tableName = tableName.toLowerCase();
@@ -44,6 +44,7 @@ public class DB {
      * DDL操作
      *
      * @param ddl DDL语句
+     * @throws SQLException SQL错误
      */
     public void ddl(String ddl) throws SQLException {
         DBExecutor.ddl(ddl, getConnection(dsCode), isCloseConnection());
@@ -55,7 +56,9 @@ public class DB {
      * @param tableName 表名
      * @param pkValue   主键值
      * @param clazz     对象类
+     * @param <E> 对象
      * @return java对象
+     * @throws SQLException SQL错误
      */
     public <E> E getObjectByPk(String tableName, Object pkValue, Class<E> clazz) throws SQLException {
         return getObject("SELECT * FROM " + tableName + " WHERE id= ?", new Object[]{pkValue}, clazz);
@@ -66,7 +69,9 @@ public class DB {
      *
      * @param sql   SQL
      * @param clazz 对象类
+     * @param <E> 对象
      * @return java对象
+     * @throws SQLException SQL错误
      */
     public <E> E getObject(String sql, Class<E> clazz) throws SQLException {
         return getObject(sql, null, clazz);
@@ -78,7 +83,9 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @param clazz  对象类
+     * @param <E> 对象
      * @return java对象
+     * @throws SQLException SQL错误
      */
     public <E> E getObject(String sql, Object[] params, Class<E> clazz) throws SQLException {
         return DBExecutor.get(sql, params, clazz, getConnection(dsCode), isCloseConnection());
@@ -89,7 +96,9 @@ public class DB {
      *
      * @param sql   SQL
      * @param clazz 对象类
+     * @param <E> 对象
      * @return java对象
+     * @throws SQLException SQL错误
      */
     public <E> List<E> findObjects(String sql, Class<E> clazz) throws SQLException {
         return findObjects(sql, null, clazz);
@@ -101,7 +110,9 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @param clazz  对象类
+     * @param <E> 对象
      * @return java对象
+     * @throws SQLException SQL错误
      */
     public <E> List<E> findObjects(String sql, Object[] params, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, params, clazz, getConnection(dsCode), isCloseConnection());
@@ -114,7 +125,9 @@ public class DB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @param clazz      对象类
+     * @param <E> 对象
      * @return 多个对象（带分页）
+     * @throws SQLException SQL错误
      */
     public <E> Page<E> findObjects(String sql, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
         return findObjects(sql, null, pageNumber, pageSize, clazz);
@@ -128,7 +141,9 @@ public class DB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @param clazz      对象类
+     * @param <E> 对象
      * @return 多个对象（带分页）
+     * @throws SQLException SQL错误
      */
     public <E> Page<E> findObjects(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
         return DBExecutor.find(sql, params, pageNumber, pageSize, clazz, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
@@ -140,6 +155,8 @@ public class DB {
      * @param tableName 表名
      * @param pkValue   主键值
      * @return 是否存在
+     * @throws SQLException SQL错误
+     * @throws IOException SQL错误
      */
     public boolean containByKey(String tableName, Object pkValue) throws SQLException, IOException {
         return get("SELECT id FROM " + tableName + " WHERE id= ?", new Object[]{pkValue}).size() != 0;
@@ -151,6 +168,8 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @return 是否存在
+     * @throws SQLException SQL错误
+     * @throws IOException SQL错误
      */
     public boolean contain(String sql, Object[] params) throws SQLException, IOException {
         return find(sql, params).size() != 0;
@@ -162,6 +181,8 @@ public class DB {
      * @param tableName 表名
      * @param pkValue   主键值
      * @return 单条记录
+     * @throws SQLException SQL错误
+     * @throws IOException SQL错误
      */
     public Map<String, Object> getByPk(String tableName, Object pkValue) throws SQLException, IOException {
         return get("SELECT * FROM " + tableName + " WHERE id= ?", new Object[]{pkValue});
@@ -172,6 +193,8 @@ public class DB {
      *
      * @param sql SQL
      * @return 单条记录
+     * @throws SQLException SQL错误
+     * @throws IOException SQL错误
      */
     public Map<String, Object> get(String sql) throws SQLException, IOException {
         return get(sql, null);
@@ -183,6 +206,8 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @return 单条记录
+     * @throws SQLException SQL错误
+     * @throws IOException SQL错误
      */
     public Map<String, Object> get(String sql, Object[] params) throws SQLException, IOException {
         return DBExecutor.get(sql, params, getConnection(dsCode), isCloseConnection());
@@ -193,7 +218,8 @@ public class DB {
      *
      * @param tableName 表名
      * @param pkValue   主键值
-     * @return 单条记录
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public Integer deleteByPk(String tableName, Object pkValue) throws SQLException {
         return update("DELETE FROM " + tableName + " WHERE id= ?", new Object[]{pkValue});
@@ -204,6 +230,7 @@ public class DB {
      *
      * @param tableName 表名
      * @return 单条记录
+     * @throws SQLException SQL错误
      */
     public Integer deleteAll(String tableName) throws SQLException {
         return update("DELETE FROM " + tableName, null);
@@ -214,6 +241,7 @@ public class DB {
      *
      * @param sql SQL
      * @return 多条记录（带分页）
+     * @throws SQLException SQL错误
      */
     public List<Map<String, Object>> find(String sql) throws SQLException {
         return find(sql, null);
@@ -225,6 +253,7 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @return 多条记录（带分页）
+     * @throws SQLException SQL错误
      */
     public List<Map<String, Object>> find(String sql, Object[] params) throws SQLException {
         return DBExecutor.find(sql, params, getConnection(dsCode), isCloseConnection());
@@ -237,6 +266,7 @@ public class DB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @return 多条记录（带分页）
+     * @throws SQLException SQL错误
      */
     public Page<Map<String, Object>> find(String sql, int pageNumber, int pageSize) throws SQLException {
         return find(sql, null, pageNumber, pageSize);
@@ -251,6 +281,7 @@ public class DB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @return 多条记录（带分页）
+     * @throws SQLException SQL错误
      */
     public Page<Map<String, Object>> find(String sql, Object[] params, int pageNumber, int pageSize) throws SQLException {
         return DBExecutor.find(sql, params, pageNumber, pageSize, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
@@ -261,6 +292,7 @@ public class DB {
      *
      * @param sql SQL
      * @return 记录数
+     * @throws SQLException SQL错误
      */
     public long count(String sql) throws SQLException {
         return count(sql, null);
@@ -272,6 +304,7 @@ public class DB {
      * @param sql    SQL
      * @param params 参数
      * @return 记录数
+     * @throws SQLException SQL错误
      */
     public long count(String sql, Object[] params) throws SQLException {
         return DBExecutor.count(sql, params, getConnection(dsCode), isCloseConnection(), getDialect(dsCode));
@@ -283,6 +316,8 @@ public class DB {
      *
      * @param tableName 表名
      * @param values    值列表
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public int save(String tableName, Map<String, Object> values) throws SQLException {
         return DBExecutor.updateModel(tableName, values, getConnection(dsCode), isCloseConnection());
@@ -294,6 +329,8 @@ public class DB {
      * @param tableName 表名
      * @param pkValue   主键值
      * @param values    值列表
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public int update(String tableName, Object pkValue, Map<String, Object> values) throws SQLException {
         return DBExecutor.updateModel(tableName, pkValue, values, getConnection(dsCode), isCloseConnection());
@@ -303,6 +340,8 @@ public class DB {
      * 更新记录
      *
      * @param sql SQL
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public int update(String sql) throws SQLException {
         return update(sql, null);
@@ -313,16 +352,19 @@ public class DB {
      *
      * @param sql    SQL
      * @param params 参数
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public int update(String sql, Object[] params) throws SQLException {
         return DBExecutor.update(sql, params, getConnection(dsCode), isCloseConnection());
     }
 
     /**
-     * 批量更新记录
      *
-     * @param sql    SQL
+     * @param sql SQL
      * @param params 参数
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public int[] batch(String sql, Object[][] params) throws SQLException {
         return DBExecutor.batch(sql, params, getConnection(dsCode), isCloseConnection());
@@ -332,6 +374,7 @@ public class DB {
      * 批量更新记录
      *
      * @param sqls SQL
+     * @throws SQLException SQL错误
      */
     public void batch(Map<String, Object[]> sqls) throws SQLException {
         DBExecutor.batch(sqls, getConnection(dsCode), isCloseConnection());

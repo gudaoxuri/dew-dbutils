@@ -25,6 +25,7 @@ public class ConcurrentDB {
      * DDL操作
      *
      * @param ddls DDL语句
+     * @throws SQLException SQL错误
      */
     public void ddls(final List<String> ddls) throws SQLException {
         final CountDownLatch signal = new CountDownLatch(ddls.size());
@@ -52,7 +53,11 @@ public class ConcurrentDB {
      *
      * @param sqls  SQLs
      * @param clazz 对象类
+     * @param <E>   对象
      * @return java对象集合
+     * @throws SQLException         SQL错误
+     * @throws ExecutionException   SQL错误
+     * @throws InterruptedException SQL错误
      */
     public <E> Map<String, E> getObjects(final Map<String, String> sqls, final Class<E> clazz) throws SQLException, ExecutionException, InterruptedException {
         return getObjects(sqls, null, clazz);
@@ -64,7 +69,9 @@ public class ConcurrentDB {
      * @param sqls   SQLs
      * @param params 参数
      * @param clazz  对象类
+     * @param <E>    对象
      * @return java对象集合
+     * @throws SQLException SQL错误
      */
     public <E> Map<String, E> getObjects(final Map<String, String> sqls, final Object[] params, final Class<E> clazz) throws SQLException {
         final Map<String, E> result = new HashMap<>();
@@ -93,7 +100,9 @@ public class ConcurrentDB {
      *
      * @param sqls  SQLs
      * @param clazz 对象类
+     * @param <E>   对象
      * @return java对象集合
+     * @throws SQLException SQL错误
      */
     public <E> Map<String, List<E>> findObjects(final Map<String, String> sqls, final Class<E> clazz) throws SQLException {
         return findObjects(sqls, null, clazz);
@@ -105,7 +114,9 @@ public class ConcurrentDB {
      * @param sqls   SQLs
      * @param params 参数
      * @param clazz  对象类
+     * @param <E>    对象
      * @return java对象集合
+     * @throws SQLException SQL错误
      */
     public <E> Map<String, List<E>> findObjects(final Map<String, String> sqls, final Object[] params, final Class<E> clazz) throws SQLException {
         final Map<String, List<E>> result = new HashMap<>();
@@ -136,7 +147,9 @@ public class ConcurrentDB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @param clazz      对象类
+     * @param <E>        对象
      * @return java对象集合（带分页）
+     * @throws SQLException SQL错误
      */
     public <E> Map<String, Page<E>> findObjects(final Map<String, String> sqls, long pageNumber, long pageSize, Class<E> clazz) throws SQLException {
         return findObjects(sqls, null, pageNumber, pageSize, clazz);
@@ -150,7 +163,9 @@ public class ConcurrentDB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @param clazz      对象类
+     * @param <E>        对象
      * @return java对象集合（带分页）
+     * @throws SQLException SQL错误
      */
     public <E> Map<String, Page<E>> findObjects(final Map<String, String> sqls, final Object[] params, final long pageNumber, final long pageSize, final Class<E> clazz) throws SQLException {
         final Map<String, Page<E>> result = new HashMap<>();
@@ -179,6 +194,7 @@ public class ConcurrentDB {
      *
      * @param sqls SQLs
      * @return 单条记录集合
+     * @throws SQLException SQL错误
      */
     public Map<String, Map<String, Object>> get(final Map<String, String> sqls) throws SQLException {
         return get(sqls, null);
@@ -190,6 +206,7 @@ public class ConcurrentDB {
      * @param sqls   SQLs
      * @param params 参数
      * @return 单条记录集合
+     * @throws SQLException SQL错误
      */
     public Map<String, Map<String, Object>> get(final Map<String, String> sqls, final Object[] params) throws SQLException {
         final Map<String, Map<String, Object>> result = new HashMap<>();
@@ -219,6 +236,7 @@ public class ConcurrentDB {
      *
      * @param sqls SQLs
      * @return 多条记录集合（带分页）
+     * @throws SQLException SQL错误
      */
     public Map<String, List<Map<String, Object>>> find(final Map<String, String> sqls) throws SQLException {
         return find(sqls, null);
@@ -230,6 +248,7 @@ public class ConcurrentDB {
      * @param sqls   SQLs
      * @param params 参数
      * @return 多条记录集合（带分页）
+     * @throws SQLException SQL错误
      */
     public Map<String, List<Map<String, Object>>> find(final Map<String, String> sqls, final Object[] params) throws SQLException {
         final Map<String, List<Map<String, Object>>> result = new HashMap<>();
@@ -260,6 +279,7 @@ public class ConcurrentDB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @return 多条记录集合（带分页）
+     * @throws SQLException SQL错误
      */
     public Map<String, Page<Map<String, Object>>> find(final Map<String, String> sqls, int pageNumber, int pageSize) throws SQLException {
         return find(sqls, null, pageNumber, pageSize);
@@ -274,6 +294,7 @@ public class ConcurrentDB {
      * @param pageNumber 页码（从1开始）
      * @param pageSize   每页条数
      * @return 多条记录集合（带分页）
+     * @throws SQLException SQL错误
      */
     public Map<String, Page<Map<String, Object>>> find(final Map<String, String> sqls, final Object[] params, final int pageNumber, final int pageSize) throws SQLException {
         final Map<String, Page<Map<String, Object>>> result = new HashMap<>();
@@ -302,6 +323,7 @@ public class ConcurrentDB {
      *
      * @param sqls SQLs
      * @return 记录数集合
+     * @throws SQLException SQL错误
      */
     public Map<String, Long> count(final Map<String, String> sqls) throws SQLException {
         return count(sqls, null);
@@ -313,6 +335,7 @@ public class ConcurrentDB {
      * @param sqls   SQLs
      * @param params 参数
      * @return 记录数集合
+     * @throws SQLException SQL错误
      */
     public Map<String, Long> count(final Map<String, String> sqls, final Object[] params) throws SQLException {
         final Map<String, Long> result = new HashMap<>();
@@ -340,6 +363,8 @@ public class ConcurrentDB {
      * 更新记录集合
      *
      * @param sqls SQLs
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public Map<String, Integer> update(final Map<String, String> sqls) throws SQLException {
         return update(sqls, null);
@@ -350,6 +375,8 @@ public class ConcurrentDB {
      *
      * @param sqls   SQLs
      * @param params 参数
+     * @return 影响行数
+     * @throws SQLException SQL错误
      */
     public Map<String, Integer> update(final Map<String, String> sqls, final Object[] params) throws SQLException {
         final Map<String, Integer> result = new HashMap<>();
@@ -378,6 +405,8 @@ public class ConcurrentDB {
      *
      * @param sqls   SQLs
      * @param params 参数
+     * @return 影响行数集合
+     * @throws SQLException SQL错误
      */
     public Map<String, int[]> batch(final Map<String, String> sqls, final Object[][] params) throws SQLException {
         final Map<String, int[]> result = new HashMap<>();
@@ -405,6 +434,5 @@ public class ConcurrentDB {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     private static final Logger logger = LoggerFactory.getLogger(ConcurrentDB.class);
-
 
 }
