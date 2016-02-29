@@ -16,6 +16,20 @@ public class DS {
     }
 
     /**
+     * 添加数据源。
+     */
+    public static void add(DSEntity dsEntity) {
+        DSLoader.addMultiDS(dsEntity);
+    }
+
+    /**
+     * 添加数据源。
+     */
+    public static void add(String flag, String url, String userName, String password) {
+        DSLoader.addMultiDS(flag, url, userName, password);
+    }
+
+    /**
      * （可选）设置配置文件路径，默认在classpath下，此设置必须在DB被调用前。
      */
     public static void setConfigPath(String path) {

@@ -1,9 +1,9 @@
 package com.ecfront.easybi.dbutils.inner;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.ecfront.easybi.dbutils.exchange.DSEntity;
 import com.ecfront.easybi.dbutils.inner.dialect.Dialect;
 import com.ecfront.easybi.dbutils.inner.dialect.DialectFactory;
-import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,16 +24,48 @@ public class DSLoader {
         MULTI_DS.clear();
         MULTI_DB_DIALECT.clear();
         MULTI_DS_ENTITY.clear();
-        loadMainDS();
-        if (ConfigContainer.MULTI_DS_SUPPORT) {
+        if (!ConfigContainer.MULTI_DS_SUPPORT) {
+            loadMainDS();
+        } else if (ConfigContainer.MULTI_DS_QUERY != null) {
+            loadMainDS();
             loadMultiDS();
+        } else {
+            logger.info("Please Use API to add multi-ds.");
         }
+    }
+
+    public static void addMultiDS(DSEntity dsEntity) {
+        MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
+        loadPool(dsEntity);
+    }
+
+    public static void addMultiDS(String flag, String url, String userName, String password) {
+        DSEntity dsEntity = new DSEntity();
+        dsEntity.flag = flag;
+        dsEntity.url = url;
+        dsEntity.poolSupport = true;
+        dsEntity.monitor = false;
+        dsEntity.userName = userName;
+        dsEntity.password = password;
+        dsEntity.defaultAutoCommit = ConfigContainer.DB_POOL_DEFAULT_AUTO_COMMIT;
+        dsEntity.initialSize = ConfigContainer.DB_POOL_INITIAL_SIZE;
+        dsEntity.maxActive = ConfigContainer.DB_POOL_MAX_ACTIVE;
+        dsEntity.minIdle = ConfigContainer.DB_POOL_MIN_IDLE;
+        dsEntity.maxIdle = ConfigContainer.DB_POOL_MAX_IDLE;
+        dsEntity.maxWait = ConfigContainer.DB_POOL_MAX_WAIT;
+        dsEntity.removeAbandoned = ConfigContainer.DB_POOL_REMOVE_ABANDONED;
+        dsEntity.removeAbandonedTimeoutMillis = ConfigContainer.DB_POOL_REMOVE_ABANDONED_TIMEOUT;
+        dsEntity.timeBetweenEvictionRunsMillis = ConfigContainer.DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
+        dsEntity.minEvictableIdleTimeMillis = ConfigContainer.DB_POOL_MIN_EVICTABLE_IDLE_TIME;
+        MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
+        loadPool(dsEntity);
     }
 
     public static ConnectionWrap getConnection(String dsCode) {
         ConnectionWrap cw = new ConnectionWrap();
         DSEntity dsEntity = MULTI_DS_ENTITY.get(dsCode);
-        cw.type = DialectFactory.getDialectType(dsEntity.driver);
+        Dialect dialect = getDialect(dsCode);
+        cw.type = dialect.getDialectType();
         try {
             if (dsEntity.poolSupport) {
                 cw.conn = MULTI_DS.get(dsCode).getConnection();
@@ -46,7 +78,7 @@ public class DSLoader {
                     }
                 }
             } else {
-                Class.forName(dsEntity.driver).newInstance();
+                Class.forName(dialect.getDriver()).newInstance();
                 cw.conn = DriverManager.getConnection(dsEntity.url, dsEntity.userName, dsEntity.password);
                 if (null == cw.conn) {
                     logger.error("Connection can't create.");
@@ -72,62 +104,58 @@ public class DSLoader {
             }
         }
         if (null != result) {
-            for (Map<String, Object> res : result) {
-                if (null != res) {
-                    DSEntity dsEntity = new DSEntity();
-                    dsEntity.flag = res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString();
-                    if (res.get(ConfigContainer.FLAG_POOL_SUPPORT.toUpperCase()) != null) {
-                        dsEntity.poolSupport = Boolean.valueOf(res.get(ConfigContainer.FLAG_POOL_SUPPORT.toUpperCase()).toString());
-                    } else {
-                        dsEntity.poolSupport = true;
-                    }
-                    if (res.get(ConfigContainer.FLAG_MONITOR.toUpperCase()) != null) {
-                        dsEntity.monitor = Boolean.valueOf(res.get(ConfigContainer.FLAG_MONITOR.toUpperCase()).toString());
-                    } else {
-                        dsEntity.monitor = true;
-                    }
-                    dsEntity.url = res.get(ConfigContainer.FLAG_URL.toUpperCase()).toString();
-                    dsEntity.driver = res.get(ConfigContainer.FLAG_DRIVER.toUpperCase()).toString();
-                    if (res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()) != null) {
-                        dsEntity.userName = res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()).toString();
-                    }
-                    if (res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()) != null) {
-                        dsEntity.password = res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()).toString();
-                    }
-                    if (res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()) != null) {
-                        dsEntity.defaultAutoCommit = Boolean.valueOf(res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()) != null) {
-                        dsEntity.initialSize = Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()) != null) {
-                        dsEntity.maxActive = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()) != null) {
-                        dsEntity.minIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()) != null) {
-                        dsEntity.maxIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()) != null) {
-                        dsEntity.maxWait = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()) != null) {
-                        dsEntity.removeAbandoned = Boolean.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()) != null) {
-                        dsEntity.removeAbandonedTimeoutMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()) != null) {
-                        dsEntity.timeBetweenEvictionRunsMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()).toString());
-                    }
-                    if (res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()) != null) {
-                        dsEntity.minEvictableIdleTimeMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()).toString());
-                    }
-                    MULTI_DS_ENTITY.put(dsEntity.flag, dsEntity);
-                    loadPool(dsEntity);
+            result.stream().filter(res -> null != res).forEach(res -> {
+                DSEntity dsEntity = new DSEntity();
+                dsEntity.flag = res.get(ConfigContainer.FLAG_CODE.toUpperCase()).toString();
+                if (res.get(ConfigContainer.FLAG_POOL_SUPPORT.toUpperCase()) != null) {
+                    dsEntity.poolSupport = Boolean.valueOf(res.get(ConfigContainer.FLAG_POOL_SUPPORT.toUpperCase()).toString());
+                } else {
+                    dsEntity.poolSupport = true;
                 }
-            }
+                if (res.get(ConfigContainer.FLAG_MONITOR.toUpperCase()) != null) {
+                    dsEntity.monitor = Boolean.valueOf(res.get(ConfigContainer.FLAG_MONITOR.toUpperCase()).toString());
+                } else {
+                    dsEntity.monitor = true;
+                }
+                dsEntity.url = res.get(ConfigContainer.FLAG_URL.toUpperCase()).toString();
+                if (res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()) != null) {
+                    dsEntity.userName = res.get(ConfigContainer.FLAG_USERNAME.toUpperCase()).toString();
+                }
+                if (res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()) != null) {
+                    dsEntity.password = res.get(ConfigContainer.FLAG_PASSWORD.toUpperCase()).toString();
+                }
+                if (res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()) != null) {
+                    dsEntity.defaultAutoCommit = Boolean.valueOf(res.get(ConfigContainer.FLAG_DEFAULT_AUTO_COMMIT.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()) != null) {
+                    dsEntity.initialSize = Integer.valueOf(res.get(ConfigContainer.FLAG_INITIAL_SIZE.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()) != null) {
+                    dsEntity.maxActive = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_ACTIVE.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()) != null) {
+                    dsEntity.minIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_IDLE.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()) != null) {
+                    dsEntity.maxIdle = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_IDLE.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()) != null) {
+                    dsEntity.maxWait = Integer.valueOf(res.get(ConfigContainer.FLAG_MAX_WAIT.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()) != null) {
+                    dsEntity.removeAbandoned = Boolean.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()) != null) {
+                    dsEntity.removeAbandonedTimeoutMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_REMOVE_ABANDONED_TIMEOUT.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()) != null) {
+                    dsEntity.timeBetweenEvictionRunsMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_TIME_BETWEEN_EVICTION_RUMS.toUpperCase()).toString());
+                }
+                if (res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()) != null) {
+                    dsEntity.minEvictableIdleTimeMillis = Integer.valueOf(res.get(ConfigContainer.FLAG_MIN_EVICTABLE_IDLE_TIME.toUpperCase()).toString());
+                }
+                addMultiDS(dsEntity);
+            });
         }
     }
 
@@ -137,7 +165,6 @@ public class DSLoader {
         dsEntity.url = ConfigContainer.DB_JDBC_URL;
         dsEntity.poolSupport = ConfigContainer.DB_POOL_SUPPORT;
         dsEntity.monitor = ConfigContainer.DB_POOL_MONITOR;
-        dsEntity.driver = ConfigContainer.DB_JDBC_DRIVER;
         dsEntity.userName = ConfigContainer.DB_JDBC_USERNAME;
         dsEntity.password = ConfigContainer.DB_JDBC_PASSWORD;
         dsEntity.defaultAutoCommit = ConfigContainer.DB_POOL_DEFAULT_AUTO_COMMIT;
@@ -155,31 +182,42 @@ public class DSLoader {
     }
 
     private static void loadPool(DSEntity dsEntity) {
-        if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("druid")) {
-            MULTI_DS.put(dsEntity.flag, loadDruidPool(dsEntity));
-        } else if (ConfigContainer.DB_POOL_TYPE.equalsIgnoreCase("dbcp")) {
-            MULTI_DS.put(dsEntity.flag, loadDBCPPool(dsEntity));
-        }
-        MULTI_DB_DIALECT.put(dsEntity.flag, DialectFactory.parseDialect(dsEntity.driver));
+        Dialect dialect = DialectFactory.parseDialect(dsEntity.url);
+        assert dialect != null;
+        MULTI_DS.put(dsEntity.flag, loadDruidPool(dsEntity, dialect.getDriver()));
+        MULTI_DB_DIALECT.put(dsEntity.flag, dialect);
         logger.debug("Load pool: flag:" + dsEntity.flag + ",url:" + dsEntity.url);
     }
 
-    private static DataSource loadDruidPool(DSEntity dsEntity) {
+    private static DataSource loadDruidPool(DSEntity dsEntity, String driver) {
         DruidDataSource ds = new DruidDataSource();
         ds.setUrl(dsEntity.url);
-        ds.setDriverClassName(dsEntity.driver);
+        ds.setDriverClassName(driver);
         ds.setUsername(dsEntity.userName);
         ds.setPassword(dsEntity.password);
         ds.setDefaultAutoCommit(dsEntity.defaultAutoCommit);
-        ds.setInitialSize(dsEntity.initialSize);
-        ds.setMaxActive(dsEntity.maxActive);
-        ds.setMinIdle(dsEntity.minIdle);
-        //ds.setMaxIdle(dsEntity.maxIdle);
-        ds.setMaxWait(dsEntity.maxWait);
+        if (dsEntity.initialSize != 0) {
+            ds.setInitialSize(dsEntity.initialSize);
+        }
+        if (dsEntity.maxActive != 0) {
+            ds.setMaxActive(dsEntity.maxActive);
+        }
+        if (dsEntity.minIdle != 0) {
+            ds.setMinIdle(dsEntity.minIdle);
+        }
+        if (dsEntity.maxWait != 0) {
+            ds.setMaxWait(dsEntity.maxWait);
+        }
         ds.setRemoveAbandoned(dsEntity.removeAbandoned);
-        ds.setRemoveAbandonedTimeoutMillis(dsEntity.removeAbandonedTimeoutMillis);
-        ds.setTimeBetweenEvictionRunsMillis(dsEntity.timeBetweenEvictionRunsMillis);
-        ds.setMinEvictableIdleTimeMillis(dsEntity.minEvictableIdleTimeMillis);
+        if (dsEntity.removeAbandonedTimeoutMillis != 0) {
+            ds.setRemoveAbandonedTimeoutMillis(dsEntity.removeAbandonedTimeoutMillis);
+        }
+        if (dsEntity.timeBetweenEvictionRunsMillis != 0) {
+            ds.setTimeBetweenEvictionRunsMillis(dsEntity.timeBetweenEvictionRunsMillis);
+        }
+        if (dsEntity.minEvictableIdleTimeMillis != 0) {
+            ds.setMinEvictableIdleTimeMillis(dsEntity.minEvictableIdleTimeMillis);
+        }
         if (dsEntity.monitor) {
             try {
                 ds.setFilters("wall,mergeStat");
@@ -187,24 +225,6 @@ public class DSLoader {
                 logger.warn("Monitor set error.", e);
             }
         }
-        return ds;
-    }
-
-    private static DataSource loadDBCPPool(DSEntity dsEntity) {
-        BasicDataSource ds = new BasicDataSource();
-        ds.setUrl(dsEntity.url);
-        ds.setDriverClassName(dsEntity.driver);
-        ds.setUsername(dsEntity.userName);
-        ds.setPassword(dsEntity.password);
-        ds.setDefaultAutoCommit(dsEntity.defaultAutoCommit);
-        ds.setInitialSize(dsEntity.initialSize);
-        ds.setMaxActive(dsEntity.maxActive);
-        ds.setMinIdle(dsEntity.minIdle);
-        ds.setMaxIdle(dsEntity.maxIdle);
-        ds.setMaxWait(dsEntity.maxWait);
-        ds.setRemoveAbandoned(dsEntity.removeAbandoned);
-        ds.setTimeBetweenEvictionRunsMillis(dsEntity.timeBetweenEvictionRunsMillis);
-        ds.setMinEvictableIdleTimeMillis(dsEntity.minEvictableIdleTimeMillis);
         return ds;
     }
 

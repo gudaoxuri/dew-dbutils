@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class HiveTest {
 
-  //  @Test
+    //  @Test
     public void test() throws Exception {
         DB db = new DB();
         db.ddl("create table test_jzy like test.spc_mkt_browse_label_10k");
@@ -22,7 +22,7 @@ public class HiveTest {
         db.ddl("drop table test_jzy");
     }
 
- //   @Test
+    //   @Test
     public void testConcurrent() throws Exception {
         ConcurrentDB cdb = new ConcurrentDB(new DB());
         Map<String, String> sqls = new HashMap<>();

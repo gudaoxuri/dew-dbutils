@@ -30,16 +30,13 @@ public class ConcurrentDB {
         final CountDownLatch signal = new CountDownLatch(ddls.size());
         for (int i = 0; i < ddls.size(); i++) {
             final int finalI = i;
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        db.ddl(ddls.get(finalI));
-                    } catch (SQLException e) {
-                        logger.warn("ddl execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    db.ddl(ddls.get(finalI));
+                } catch (SQLException e) {
+                    logger.warn("ddl execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -73,16 +70,13 @@ public class ConcurrentDB {
         final Map<String, E> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.getObject(entry.getValue(), params, clazz));
-                    } catch (SQLException e) {
-                        logger.warn("getObjects execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.getObject(entry.getValue(), params, clazz));
+                } catch (SQLException e) {
+                    logger.warn("getObjects execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -117,16 +111,13 @@ public class ConcurrentDB {
         final Map<String, List<E>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.findObjects(entry.getValue(), params, clazz));
-                    } catch (SQLException e) {
-                        logger.warn("findObjects execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.findObjects(entry.getValue(), params, clazz));
+                } catch (SQLException e) {
+                    logger.warn("findObjects execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -165,16 +156,13 @@ public class ConcurrentDB {
         final Map<String, Page<E>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.findObjects(entry.getValue(), params, pageNumber, pageSize, clazz));
-                    } catch (SQLException e) {
-                        logger.warn("findObjects execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.findObjects(entry.getValue(), params, pageNumber, pageSize, clazz));
+                } catch (SQLException e) {
+                    logger.warn("findObjects execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -207,16 +195,13 @@ public class ConcurrentDB {
         final Map<String, Map<String, Object>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.get(entry.getValue(), params));
-                    } catch (Exception e) {
-                        logger.warn("get execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.get(entry.getValue(), params));
+                } catch (Exception e) {
+                    logger.warn("get execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -250,16 +235,13 @@ public class ConcurrentDB {
         final Map<String, List<Map<String, Object>>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.find(entry.getValue(), params));
-                    } catch (SQLException e) {
-                        logger.warn("find execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.find(entry.getValue(), params));
+                } catch (SQLException e) {
+                    logger.warn("find execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -297,16 +279,13 @@ public class ConcurrentDB {
         final Map<String, Page<Map<String, Object>>> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.find(entry.getValue(), params, pageNumber, pageSize));
-                    } catch (SQLException e) {
-                        logger.warn("find execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.find(entry.getValue(), params, pageNumber, pageSize));
+                } catch (SQLException e) {
+                    logger.warn("find execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -339,16 +318,13 @@ public class ConcurrentDB {
         final Map<String, Long> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.count(entry.getValue(), params));
-                    } catch (SQLException e) {
-                        logger.warn("count execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.count(entry.getValue(), params));
+                } catch (SQLException e) {
+                    logger.warn("count execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -379,16 +355,13 @@ public class ConcurrentDB {
         final Map<String, Integer> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.update(entry.getValue(), params));
-                    } catch (SQLException e) {
-                        logger.warn("update execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.update(entry.getValue(), params));
+                } catch (SQLException e) {
+                    logger.warn("update execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }
@@ -410,16 +383,13 @@ public class ConcurrentDB {
         final Map<String, int[]> result = new HashMap<>();
         final CountDownLatch signal = new CountDownLatch(sqls.size());
         for (final Map.Entry<String, String> entry : sqls.entrySet()) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        result.put(entry.getKey(), db.batch(entry.getValue(), params));
-                    } catch (SQLException e) {
-                        logger.warn("batch execute error..", e);
-                    } finally {
-                        signal.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    result.put(entry.getKey(), db.batch(entry.getValue(), params));
+                } catch (SQLException e) {
+                    logger.warn("batch execute error..", e);
+                } finally {
+                    signal.countDown();
                 }
             });
         }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class PostgresDialect implements Dialect {
+class PostgresDialect implements Dialect {
 
     @Override
     public String paging(String sql, long pageNumber, long pageSize) throws SQLException {
@@ -93,5 +93,15 @@ public class PostgresDialect implements Dialect {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public String getDriver() {
+        return "org.postgresql.Driver";
+    }
+
+    @Override
+    public DialectType getDialectType() {
+        return DialectType.POSTGRE;
     }
 }

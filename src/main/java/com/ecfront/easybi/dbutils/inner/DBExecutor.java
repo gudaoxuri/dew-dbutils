@@ -19,12 +19,9 @@ import java.util.Map;
 
 public class DBExecutor {
 
-    public static final QueryRunnerExt queryRunner = new QueryRunnerExt();
+    static final QueryRunnerExt queryRunner = new QueryRunnerExt();
 
     public static <E> E get(String sql, Object[] params, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL && params != null) {
-            throw new SQLException("SparkSQL don't support [params] parameter.");
-        }
         E object = null;
         try {
             if (params == null) {
@@ -44,9 +41,6 @@ public class DBExecutor {
     }
 
     public static <E> List<E> find(String sql, Object[] params, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL && params != null) {
-            throw new SQLException("SparkSQL don't support [params] parameter.");
-        }
         List<E> list = null;
         try {
             if (null == params) {
@@ -66,9 +60,6 @@ public class DBExecutor {
     }
 
     public static <E> Page<E> find(String sql, Object[] params, long pageNumber, long pageSize, Class<E> clazz, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL) {
-            throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
-        }
         Page<E> page = new Page<>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
@@ -80,9 +71,6 @@ public class DBExecutor {
     }
 
     public static Map<String, Object> get(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException, IOException {
-        if (cw.type == DialectType.SPARK_SQL && params != null) {
-            throw new SQLException("SparkSQL don't support [params] parameter.");
-        }
         Map<String, Object> map = null;
         try {
             if (null == params) {
@@ -109,9 +97,6 @@ public class DBExecutor {
     }
 
     public static List<Map<String, Object>> find(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL && params != null) {
-            throw new SQLException("SparkSQL don't support [params] parameter.");
-        }
         List<Map<String, Object>> list = null;
         try {
             if (null == params) {
@@ -131,9 +116,6 @@ public class DBExecutor {
     }
 
     public static Page<Map<String, Object>> find(String sql, Object[] params, long pageNumber, long pageSize, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL) {
-            throw new SQLException("SparkSQL don't support [find with paging] method,please use [find] method replace it.");
-        }
         Page<Map<String, Object>> page = new Page<>();
         String pagedSql = dialect.paging(sql, pageNumber, pageSize);
         page.pageNumber = pageNumber;
@@ -149,9 +131,6 @@ public class DBExecutor {
     }
 
     public static long count(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn, Dialect dialect) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL) {
-            throw new SQLException("SparkSQL don't support [count] method,please use [find] method replace it.");
-        }
         String countSql = dialect.count(sql);
         try {
             if (null == params) {
@@ -196,7 +175,7 @@ public class DBExecutor {
     }
 
     public static int update(String sql, Object[] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL && params != null) {
+        if (cw.type == DialectType.HIVE && params != null) {
             throw new SQLException("SparkSQL don't support [params] parameter.");
         }
         try {
@@ -222,7 +201,7 @@ public class DBExecutor {
     }
 
     public static void batch(Map<String, Object[]> sqls, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL) {
+        if (cw.type == DialectType.HIVE) {
             throw new SQLException("SparkSQL don't support [batch] method.");
         }
         for (Map.Entry<String, Object[]> entry : sqls.entrySet()) {
@@ -250,7 +229,7 @@ public class DBExecutor {
     }
 
     public static int[] batch(String sql, Object[][] params, ConnectionWrap cw, boolean isCloseConn) throws SQLException {
-        if (cw.type == DialectType.SPARK_SQL) {
+        if (cw.type == DialectType.HIVE) {
             throw new SQLException("SparkSQL don't support [batch] method.");
         }
         try {

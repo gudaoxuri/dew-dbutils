@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MySQLDialect implements Dialect {
+class MySQLDialect implements Dialect {
 
     @Override
     public String paging(String sql, long pageNumber, long pageSize) throws SQLException {
@@ -79,4 +79,15 @@ public class MySQLDialect implements Dialect {
             return sb.substring(0, sb.length() - 1) + ")";
         }
     }
+
+    @Override
+    public String getDriver() {
+        return "com.mysql.jdbc.Driver";
+    }
+
+    @Override
+    public DialectType getDialectType() {
+        return DialectType.MYSQL;
+    }
+
 }

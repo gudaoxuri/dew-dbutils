@@ -1,4 +1,4 @@
-package com.ecfront.easybi.dbutils.inner;
+package com.ecfront.easybi.dbutils.exchange;
 
 public class DSEntity {
 
@@ -6,7 +6,6 @@ public class DSEntity {
     public boolean poolSupport;
     public boolean monitor;
     public String url;
-    public String driver;
     public String userName;
     public String password;
     public boolean defaultAutoCommit;

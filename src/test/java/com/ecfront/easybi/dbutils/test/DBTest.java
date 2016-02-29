@@ -21,11 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBTest {
 
-    private void testDropTable(DB db) throws SQLException {
+    protected void testDropTable(DB db) throws SQLException {
         db.ddl("drop table tuser");
     }
 
-    private void testCreateTable(DB db) throws SQLException {
+    protected void testCreateTable(DB db) throws SQLException {
         db.ddl("create table tuser(" +
                 "id int not null," +
                 "name varchar(255)," +
@@ -37,11 +37,11 @@ public class DBTest {
                 ")");
     }
 
-    private void testUpdate(DB db) throws SQLException {
+    protected void testUpdate(DB db) throws SQLException {
         db.update("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[]{1, "张三", "123", 22, 2333.22, true});
     }
 
-    private void testBatch(DB db) throws SQLException {
+    protected void testBatch(DB db) throws SQLException {
         db.batch("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", new Object[][]{
                 {2, "李四", "123", 22, 2333.22, true},
                 {3, "王五1", "123", 22, 2333.22, false},
@@ -50,17 +50,17 @@ public class DBTest {
         });
     }
 
-    private void testCount(DB db) throws SQLException {
+    protected void testCount(DB db) throws SQLException {
         long result = db.count("select * from tuser");
         Assert.assertEquals(result, 5);
     }
 
-    private void testGet(DB db) throws SQLException, IOException {
+    protected void testGet(DB db) throws SQLException, IOException {
         Map<String, Object> result = db.get("select * from tuser where id=?", new Object[]{1});
         Assert.assertEquals(result.get("id"), 1);
     }
 
-    private void testFind(DB db) throws SQLException {
+    protected void testFind(DB db) throws SQLException {
         List<Map<String, Object>> result = db.find("select * from tuser where age=?", new Object[]{22});
         Assert.assertEquals(result.size(), 4);
         Page<Map<String, Object>> page = db.find("select * from tuser", 1, 2);
@@ -69,13 +69,13 @@ public class DBTest {
 
     }
 
-    private void testGetObject(DB db) throws SQLException {
+    protected void testGetObject(DB db) throws SQLException {
         logger.debug("testGetObject.");
         User user = db.getObject("select * from tuser where id= ? ", new Object[]{1}, User.class);
         Assert.assertEquals(user.getId(), 1);
     }
 
-    private void testFindObjects(DB db) throws SQLException {
+    protected void testFindObjects(DB db) throws SQLException {
         List<User> users = db.findObjects("select * from tuser where age=?", new Object[]{22}, User.class);
         Assert.assertEquals(users.size(), 4);
 
@@ -104,17 +104,14 @@ public class DBTest {
         final CountDownLatch watch = new CountDownLatch(10000);
         final AtomicInteger count = new AtomicInteger(0);
         for (int i = 0; i < 100; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i < 100; i++) {
-                        try {
-                            logger.debug(">>>>>>>>>>>>>>" + count.incrementAndGet());
-                            watch.countDown();
-                            testFind(new DB());
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
+            new Thread(() -> {
+                for (int i1 = 0; i1 < 100; i1++) {
+                    try {
+                        logger.debug(">>>>>>>>>>>>>>" + count.incrementAndGet());
+                        watch.countDown();
+                        testFind(new DB());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
                 }
             }).start();
@@ -168,35 +165,6 @@ public class DBTest {
         Assert.assertEquals(db.count("select * from tuser"), 1);
 
         testDropTable(db);
-    }
-
-    public void testMultiDS() throws Exception {
-        DB db = new DB();
-        db.ddl("create table multi_ds(" +
-                "code varchar(255) not null," +
-                "driver varchar(255)," +
-                "url varchar(255)," +
-                "username varchar(255)," +
-                "password varchar(255)," +
-                "initialSize int," +
-                "maxActive int," +
-                "minIdle int," +
-                "maxIdle int," +
-                "maxWait int," +
-                "enable int," +
-                "primary key(code)" +
-                ")");
-        db.batch("insert into multi_ds (code,driver,url,username,password,initialSize,maxActive,minIdle,maxIdle,maxWait,enable) values ( ? , ? , ? , ? , ? , ?, ?, ?, ?, ?, ? )", new Object[][]{
-                {"ds1", "org.h2.Driver", "jdbc:h2:mem:db1", "sa", "", 10, 50, 5, 20, 5000, true},
-                {"ds2", "org.h2.Driver", "jdbc:h2:mem:db2", "sa", "", 10, 50, 5, 20, 5000, false}
-        });
-        Assert.assertEquals(db.count("select * from multi_ds"), 2);
-
-        DS.reload();
-        DB multiDB = new DB("ds1");
-        testCreateTable(multiDB);
-        testUpdate(multiDB);
-        Assert.assertEquals(multiDB.count("select * from tuser"), 1);
     }
 
     @Test

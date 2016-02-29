@@ -5,59 +5,54 @@ import com.ecfront.easybi.base.utils.PropertyHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigContainer {
+class ConfigContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigContainer.class);
 
-    public static final String FLAG_CODE= "code";
-    public static final String FLAG_POOL_SUPPORT= "poolSupport";
-    public static final String FLAG_MONITOR= "monitor";
-    public static final String FLAG_DRIVER = "driver";
-    public static final String FLAG_URL = "url";
-    public static final String FLAG_USERNAME = "username";
-    public static final String FLAG_PASSWORD = "password";
-    public static final String FLAG_INITIAL_SIZE = "initialSize";
-    public static final String FLAG_MAX_ACTIVE = "maxActive";
-    public static final String FLAG_MIN_IDLE = "minIdle";
-    public static final String FLAG_MAX_IDLE = "maxIdle";
-    public static final String FLAG_MAX_WAIT = "maxWait";
-    public static final String FLAG_DEFAULT_AUTO_COMMIT="autoCommit";
-    public static final String FLAG_REMOVE_ABANDONED="rmAbandoned";
-    public static final String FLAG_REMOVE_ABANDONED_TIMEOUT="rmAbandonedTimeout";
-    public static final String FLAG_TIME_BETWEEN_EVICTION_RUMS="betweenEvictionRuns";
-    public static final String FLAG_MIN_EVICTABLE_IDLE_TIME="minEvictableIdle";
+    static final String FLAG_CODE= "code";
+    static final String FLAG_POOL_SUPPORT= "poolSupport";
+    static final String FLAG_MONITOR= "monitor";
+    static final String FLAG_URL = "url";
+    static final String FLAG_USERNAME = "username";
+    static final String FLAG_PASSWORD = "password";
+    static final String FLAG_INITIAL_SIZE = "initialSize";
+    static final String FLAG_MAX_ACTIVE = "maxActive";
+    static final String FLAG_MIN_IDLE = "minIdle";
+    static final String FLAG_MAX_IDLE = "maxIdle";
+    static final String FLAG_MAX_WAIT = "maxWait";
+    static final String FLAG_DEFAULT_AUTO_COMMIT="autoCommit";
+    static final String FLAG_REMOVE_ABANDONED="rmAbandoned";
+    static final String FLAG_REMOVE_ABANDONED_TIMEOUT="rmAbandonedTimeout";
+    static final String FLAG_TIME_BETWEEN_EVICTION_RUMS="betweenEvictionRuns";
+    static final String FLAG_MIN_EVICTABLE_IDLE_TIME="minEvictableIdle";
 
 
-    public static Boolean MULTI_DS_SUPPORT;
-    public static String MULTI_DS_QUERY;
-    public static String DB_JDBC_DRIVER;
-    public static String DB_JDBC_URL;
-    public static String DB_JDBC_USERNAME;
-    public static String DB_JDBC_PASSWORD;
-    public static boolean DB_POOL_SUPPORT;
-    public static String DB_POOL_TYPE;
-    public static boolean DB_POOL_MONITOR;
-    public static int DB_POOL_INITIAL_SIZE;
-    public static int DB_POOL_MAX_ACTIVE;
-    public static int DB_POOL_MIN_IDLE;
-    public static int DB_POOL_MAX_IDLE;
-    public static int DB_POOL_MAX_WAIT;
-    public static boolean DB_POOL_DEFAULT_AUTO_COMMIT;
-    public static boolean DB_POOL_REMOVE_ABANDONED;
-    public static int DB_POOL_REMOVE_ABANDONED_TIMEOUT;
-    public static int DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
-    public static int DB_POOL_MIN_EVICTABLE_IDLE_TIME;
+    static Boolean MULTI_DS_SUPPORT;
+    static String MULTI_DS_QUERY;
+    static String DB_JDBC_URL;
+    static String DB_JDBC_USERNAME;
+    static String DB_JDBC_PASSWORD;
+    static boolean DB_POOL_SUPPORT;
+    static boolean DB_POOL_MONITOR;
+    static int DB_POOL_INITIAL_SIZE;
+    static int DB_POOL_MAX_ACTIVE;
+    static int DB_POOL_MIN_IDLE;
+    static int DB_POOL_MAX_IDLE;
+    static int DB_POOL_MAX_WAIT;
+    static boolean DB_POOL_DEFAULT_AUTO_COMMIT;
+    static boolean DB_POOL_REMOVE_ABANDONED;
+    static int DB_POOL_REMOVE_ABANDONED_TIMEOUT;
+    static int DB_POOL_TIME_BETWEEN_EVICTION_RUMS;
+    static int DB_POOL_MIN_EVICTABLE_IDLE_TIME;
 
     static {
         try {
-            MULTI_DS_SUPPORT = null != PropertyHelper.get("ez_multi_ds_support") ? Boolean.valueOf(PropertyHelper.get("ez_multi_ds_support")) : true;
+            MULTI_DS_SUPPORT = null != PropertyHelper.get("ez_multi_ds_support") ? Boolean.valueOf(PropertyHelper.get("ez_multi_ds_support")) : false;
             MULTI_DS_QUERY = PropertyHelper.get("ez_multi_ds_query");
-            DB_JDBC_DRIVER = PropertyHelper.get("ez_db_jdbc_driver");
             DB_JDBC_URL = PropertyHelper.get("ez_db_jdbc_url");
             DB_JDBC_USERNAME = PropertyHelper.get("ez_db_jdbc_username");
             DB_JDBC_PASSWORD = PropertyHelper.get("ez_db_jdbc_password");
             DB_POOL_SUPPORT = null != PropertyHelper.get("ez_db_pool_support") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_support")) : true;
-            DB_POOL_TYPE = null != PropertyHelper.get("ez_db_pool_type") ? PropertyHelper.get("ez_db_pool_type") : "druid";
             DB_POOL_MONITOR = null != PropertyHelper.get("ez_db_pool_monitor") ? Boolean.valueOf(PropertyHelper.get("ez_db_pool_monitor")) : false;
             DB_POOL_INITIAL_SIZE = null != PropertyHelper.get("ez_db_pool_initialSize") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_initialSize")) : 10;
             DB_POOL_MAX_ACTIVE = null != PropertyHelper.get("ez_db_pool_maxActive") ? Integer.valueOf(PropertyHelper.get("ez_db_pool_maxActive")) : 50;
