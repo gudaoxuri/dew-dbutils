@@ -3,12 +3,24 @@ package com.ecfront.easybi.dbutils.test;
 
 import com.ecfront.easybi.dbutils.exchange.ConcurrentDB;
 import com.ecfront.easybi.dbutils.exchange.DB;
+import com.ecfront.easybi.dbutils.exchange.Meta;
+import junit.framework.Assert;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HiveTest {
+
+    @Test
+    public void testMeta() throws Exception {
+        DB db = new DB();
+        List<Meta> metas = db.getMetaData("tuser");
+        Assert.assertEquals(metas.get(0).label, "id");
+        Meta meta = db.getMetaData("tuser", "name");
+        Assert.assertEquals(meta.label, "name");
+    }
 
     //  @Test
     public void test() throws Exception {

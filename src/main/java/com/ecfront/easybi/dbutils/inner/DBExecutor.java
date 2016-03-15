@@ -271,10 +271,12 @@ public class DBExecutor {
             ResultSetMetaData meta = rs.getMetaData();
             List<Meta> metas = new ArrayList<>();
             for (int i = 1; i <= meta.getColumnCount(); i++) {
-                if (null != fieldName && !meta.getColumnLabel(i).equalsIgnoreCase(fieldName)) {
+                String columnName = meta.getColumnName(i).substring(meta.getColumnName(i).lastIndexOf(".") + 1);
+                String columnLabel = meta.getColumnLabel(i).substring(meta.getColumnLabel(i).lastIndexOf(".") + 1);
+                if (null != fieldName && !columnLabel.equalsIgnoreCase(fieldName)) {
                     continue;
                 }
-                metas.add(new Meta(meta.getColumnType(i), meta.getColumnName(i).toLowerCase(), meta.getColumnLabel(i).toLowerCase()));
+                metas.add(new Meta(meta.getColumnType(i), columnName.toLowerCase(), columnLabel.toLowerCase()));
             }
             return metas;
         } catch (SQLException e) {
