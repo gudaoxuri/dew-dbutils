@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLDecoder;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -14,11 +15,6 @@ import java.util.Properties;
 
 public class PropertyHelper {
     private static Map<String, String> properties;
-    private static String propertiesPath;
-
-    public static void setPropertiesPath(String path) {
-        propertiesPath = path;
-    }
 
     public static String get(String name, String defaultVal) {
         String val = get(name);
@@ -34,9 +30,22 @@ public class PropertyHelper {
                 if (null == properties) {
                     try {
                         properties = new HashMap<>();
-                        loadProperties(propertiesPath == null ? URLDecoder.decode(PropertyHelper.class.getResource("/").getPath(), "utf-8") : propertiesPath);
+                        String confPath = System.getProperty("conf");
+                        if (confPath == null) {
+                            URL classPath = PropertyHelper.class.getResource("/");
+                            if (classPath != null) {
+                                confPath = classPath.getPath();
+                            } else {
+                                String currentPath = PropertyHelper.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+                                currentPath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+                                confPath = currentPath + "/config/";
+                            }
+                        }
+                        loadProperties(confPath);
                     } catch (IOException e) {
                         logger.error("Get property error:", e);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
                     }
                 }
             }

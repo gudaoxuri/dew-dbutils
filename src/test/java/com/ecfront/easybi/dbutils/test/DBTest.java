@@ -1,7 +1,6 @@
 package com.ecfront.easybi.dbutils.test;
 
 import com.ecfront.easybi.dbutils.exchange.DB;
-import com.ecfront.easybi.dbutils.exchange.DS;
 import com.ecfront.easybi.dbutils.exchange.Meta;
 import com.ecfront.easybi.dbutils.exchange.Page;
 import junit.framework.Assert;
@@ -169,11 +168,6 @@ public class DBTest {
 
     @Test
     public void testCreateAndUpdate() throws SQLException, IOException {
-        String testPath = this.getClass().getResource("/").getPath();
-        if (System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS")) {
-            testPath = testPath.substring(1);
-        }
-        DS.setConfigPath(testPath);
         DB db = new DB();
         Map<String, String> fields = new HashMap<>();
         fields.put("id", "long");
