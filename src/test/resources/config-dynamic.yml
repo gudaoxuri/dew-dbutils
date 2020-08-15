@@ -1,0 +1,14 @@
+ds:
+  - code: defalut
+    url: jdbc:h2:mem:db
+    username: sa
+    password:
+    monitor: true
+    pool:
+      initialSize: 0
+      maxActive: 8
+dynamicDS:
+  enabled: true
+  dsCode: default
+  fetchSql: select code,url,username,password,monitor,pool_initialSize,pool_maxActive from multi_ds
+

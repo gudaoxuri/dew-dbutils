@@ -1,0 +1,9 @@
+ds:
+  - code: default
+    url: jdbc:h2:mem:db
+    username: sa
+    password:
+    monitor: true
+    pool:
+      initialSize: 0
+      maxActive: 8
