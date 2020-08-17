@@ -98,6 +98,11 @@ class H2Dialect implements Dialect {
     }
 
     @Override
+    public String validationQuery() {
+        return "SELECT 1";
+    }
+
+    @Override
     public String getDriver() {
         return "org.h2.Driver";
     }

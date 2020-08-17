@@ -112,6 +112,11 @@ class PostgresDialect implements Dialect {
     }
 
     @Override
+    public String validationQuery() {
+        return "SELECT 'x'";
+    }
+
+    @Override
     public String getDriver() {
         return "org.postgresql.Driver";
     }

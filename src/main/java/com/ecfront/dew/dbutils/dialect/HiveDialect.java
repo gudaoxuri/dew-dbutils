@@ -88,6 +88,11 @@ class HiveDialect implements Dialect {
     }
 
     @Override
+    public String validationQuery() {
+        return "SELECT 1";
+    }
+
+    @Override
     public String getDriver() {
         return "org.apache.hive.jdbc.HiveDriver";
     }

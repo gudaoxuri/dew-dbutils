@@ -57,6 +57,10 @@ public class DewDB {
         this.dsInfo = dsInfo;
     }
 
+    public DSLoader.DSInfo getDsInfo() {
+        return dsInfo;
+    }
+
     /**
      * 创建表
      *
@@ -408,7 +412,7 @@ public class DewDB {
             //Re-setting connection when connection was close.
             synchronized (DSLoader.class) {
                 log.warn("[DewDBUtils]Connection info [{}] was close", conn.toString());
-                DSLoader.loadPool(dsInfo.getDsConfig(), dsInfo.getDialect().getDriver());
+                DSLoader.loadPool(dsInfo.getDsConfig(), dsInfo.getDialect());
                 return dsInfo.getDataSource().getConnection();
             }
         } catch (SQLException e) {

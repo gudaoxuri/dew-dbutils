@@ -88,7 +88,7 @@ public class DSLoader {
             Dialect dialect = DialectFactory.parseDialect(dsConfig.getUrl());
             assert dialect != null;
             MULTI_DS.put(dsConfig.getCode(), DSInfo.builder()
-                    .dataSource(loadPool(dsConfig, dialect.getDriver()))
+                    .dataSource(loadPool(dsConfig, dialect))
                     .dialect(dialect)
                     .dsConfig(dsConfig)
                     .build());
@@ -96,12 +96,13 @@ public class DSLoader {
         });
     }
 
-    public static DataSource loadPool(DSConfig dsConfig, String driver) {
+    public static DataSource loadPool(DSConfig dsConfig, Dialect dialect) {
         DruidDataSource dataSource = new DruidDataSource();
         dataSource.setUrl(dsConfig.getUrl());
-        dataSource.setDriverClassName(driver);
+        dataSource.setDriverClassName(dialect.getDriver());
         dataSource.setUsername(dsConfig.getUsername());
         dataSource.setPassword(dsConfig.getPassword());
+        dataSource.setValidationQuery(dialect.validationQuery());
         if (dsConfig.getPool().getInitialSize() != null) {
             dataSource.setInitialSize(dsConfig.getPool().getInitialSize());
         }
