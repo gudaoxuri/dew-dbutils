@@ -62,7 +62,8 @@ public class DewDB {
     }
 
     /**
-     * 创建表
+     * 创建表.
+     * <p>
      *
      * @param tableName    表名
      * @param tableDesc    表说明
@@ -72,7 +73,9 @@ public class DewDB {
      * @param uniqueFields 唯一值字段
      * @param pkField      主键字段
      * @throws SQLException SQL错误
+     * @deprecated - 此功能存在一定限制，建议使用 {@link this#ddl(String)} 建表
      */
+    @Deprecated
     public void createTableIfNotExist(String tableName, String tableDesc,
                                       Map<String, String> fields,
                                       Map<String, String> fieldsDesc,
@@ -88,7 +91,7 @@ public class DewDB {
     }
 
     /**
-     * DDL操作
+     * DDL操作.
      *
      * @param ddl DDL语句
      * @throws SQLException SQL错误
@@ -98,7 +101,7 @@ public class DewDB {
     }
 
     /**
-     * 获取单条记录
+     * 获取单条记录.
      *
      * @param tableName 表名
      * @param pkField   主键字段
@@ -113,7 +116,7 @@ public class DewDB {
     }
 
     /**
-     * 获取单个对象
+     * 获取单个对象.
      *
      * @param sql    SQL
      * @param params 参数
@@ -127,7 +130,7 @@ public class DewDB {
     }
 
     /**
-     * 获取多个对象
+     * 获取多个对象.
      *
      * @param sql    SQL
      * @param params 参数
@@ -142,7 +145,7 @@ public class DewDB {
 
 
     /**
-     * 获取多个对象（带分页）
+     * 获取多个对象（带分页）.
      *
      * @param sql        SQL
      * @param params     参数
@@ -158,7 +161,7 @@ public class DewDB {
     }
 
     /**
-     * 判断记录是否存在
+     * 判断记录是否存在.
      *
      * @param tableName 表名
      * @param pkField   主键字段
@@ -171,7 +174,7 @@ public class DewDB {
     }
 
     /**
-     * 判断记录是否存在
+     * 判断记录是否存在.
      *
      * @param sql    SQL
      * @param params 参数
@@ -183,7 +186,7 @@ public class DewDB {
     }
 
     /**
-     * 获取单条记录
+     * 获取单条记录.
      *
      * @param tableName 表名
      * @param pkField   主键字段
@@ -196,7 +199,7 @@ public class DewDB {
     }
 
     /**
-     * 获取单条记录
+     * 获取单条记录.
      *
      * @param sql    SQL
      * @param params 参数
@@ -208,7 +211,7 @@ public class DewDB {
     }
 
     /**
-     * 获取多条记录
+     * 获取多条记录.
      *
      * @param sql    SQL
      * @param params 参数
@@ -220,7 +223,7 @@ public class DewDB {
     }
 
     /**
-     * 获取多条记录（带分页）
+     * 获取多条记录（带分页）.
      *
      * @param sql        SQL
      * @param params     参数
@@ -234,7 +237,7 @@ public class DewDB {
     }
 
     /**
-     * 获取记录数
+     * 获取记录数.
      *
      * @param sql    SQL
      * @param params 参数
@@ -246,7 +249,7 @@ public class DewDB {
     }
 
     /**
-     * 添加记录
+     * 添加记录.
      *
      * @param tableName 表名
      * @param values    值列表
@@ -258,7 +261,7 @@ public class DewDB {
     }
 
     /**
-     * 修改记录
+     * 修改记录.
      *
      * @param tableName 表名
      * @param pkField   主键字段
@@ -272,7 +275,7 @@ public class DewDB {
     }
 
     /**
-     * 更新记录
+     * 更新记录.
      *
      * @param sql    SQL
      * @param params 参数
@@ -284,6 +287,8 @@ public class DewDB {
     }
 
     /**
+     * 批量更新记录.
+     *
      * @param sql    SQL
      * @param params 参数
      * @return 影响行数
@@ -294,7 +299,7 @@ public class DewDB {
     }
 
     /**
-     * 批量更新记录
+     * 批量更新记录.
      *
      * @param sqls SQL
      * @throws SQLException SQL错误
@@ -304,7 +309,7 @@ public class DewDB {
     }
 
     /**
-     * 删除单条记录
+     * 删除单条记录.
      *
      * @param tableName 表名
      * @param pkField   主键字段
@@ -317,7 +322,7 @@ public class DewDB {
     }
 
     /**
-     * 删除所有记录
+     * 删除所有记录.
      *
      * @param tableName 表名
      * @return 单条记录
@@ -327,16 +332,31 @@ public class DewDB {
         return update("DELETE FROM " + tableName);
     }
 
+    /**
+     * 获取Meta信息.
+     *
+     * @param tableName 表名
+     * @return Meta信息
+     * @throws SQLException SQL错误
+     */
     public List<Meta> getMetaData(String tableName) throws SQLException {
         return DBExecutor.getMetaData(tableName, getConnection());
     }
 
+    /**
+     * 获取Meta信息.
+     *
+     * @param tableName 表名
+     * @param fieldName 指定的字段名
+     * @return Meta信息
+     * @throws SQLException SQL错误
+     */
     public Meta getMetaData(String tableName, String fieldName) throws SQLException {
         return DBExecutor.getMetaData(tableName, fieldName, getConnection());
     }
 
     /**
-     * 打开事务
+     * 打开事务.
      */
     public void open() {
         Connection conn = threadLocalConnection.get();
@@ -352,7 +372,7 @@ public class DewDB {
     }
 
     /**
-     * 提交事务
+     * 提交事务.
      */
     public void commit() {
         Connection conn = threadLocalConnection.get();
@@ -367,7 +387,9 @@ public class DewDB {
     }
 
     /**
-     * 显示回滚事务（发生SQL错误时会自动回滚，但业务错误需要调用此方法手工回滚）
+     * 显式回滚事务.
+     * <p>
+     * 发生SQL错误时会自动回滚，但业务错误需要调用此方法手工回滚.
      */
     public void rollback() {
         Connection conn = threadLocalConnection.get();

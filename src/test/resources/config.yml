@@ -7,3 +7,11 @@ ds:
     pool:
       initialSize: 0
       maxActive: 8
+  - code: mysql
+    url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: 123456
+    monitor: true
+    pool:
+      initialSize: 0
+      maxActive: 8

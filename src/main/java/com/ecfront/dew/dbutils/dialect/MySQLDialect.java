@@ -58,7 +58,7 @@ class MySQLDialect implements Dialect {
                     t = "SMALLINT";
                     break;
                 case "string":
-                    t = "VARCHAR(65535)";
+                    t = "VARCHAR(2000)";
                     break;
                 case "text":
                     t = "TEXT";
@@ -82,6 +82,7 @@ class MySQLDialect implements Dialect {
                 case "uuid":
                     t = "UUID";
                     break;
+                case "bigdecimal":
                 case "decimal":
                     t = "DECIMAL";
                     break;

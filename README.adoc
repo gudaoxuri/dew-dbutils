@@ -1,87 +1,375 @@
-== Encapsulate dbutils, Provides dynamic multi-data source(Mysql、PostgreSQL、H2、Hive) , multi-type of database , transaction , paging and concurrent.
+== 轻量级多实例数据库操作工具
 
-=== How to use
+=== 特性
 
-[source]
+. 支持多数据源及动态数据源增删
+. 轻量级无过多过重依赖
+. 统一不同类型数据库的常规操作（比如分页、表创建等）
+
+=== 使用
+
+==== 引入Maven依赖
+
+[source,xml]
 ----
 <dependency>
     <groupId>com.ecfront.dew</groupId>
     <artifactId>dbutils</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.0-beta</version>
 </dependency>
 ----
 
-Add the following configuration in the properties file :
+==== 添加配置
 
-[source]
+配置文件要求为yml格式，可在 ``ds`` 节点下添加静态的数据源配置，也可以在 ``dynamicDS`` 节点下添加动态数据源配置。
+
+动态数据源需要指定在从哪个静态数据源下的哪条sql获取动态数据。
+
+[source,yml]
+.配置格式
 ----
-####Support multiple data sources
-ez_multi_ds_support=true
-####Multiple data source configuration items to obtain SQL, Must return the following fields
-ez_multi_ds_query=select code,poolSupport,monitor,url,username,password,initialSize,maxActive,minIdle,maxIdle,maxWait,autoCommit,rmAbandoned,rmAbandonedTimeout,betweenEvictionRuns,minEvictableIdle from multi_ds where enable=1
-
-####db settings
-ez_db_pool_support=true
-
-ez_db_pool_initialSize=10
-ez_db_pool_maxActive=50
-ez_db_pool_minIdle=5
-ez_db_pool_maxIdle=20
-ez_db_pool_maxWait=60000
-ez_db_pool_defaultAutoCommit=true
-ez_db_pool_removeAbandoned=true
-ez_db_pool_removeAbandonedTimeoutMillis=180
-ez_db_pool_timeBetweenEvictionRunsMillis=3600000
-ez_db_pool_minEvictableIdleTimeMillis=3600000
-
-ez_db_jdbc_url=jdbc:h2:mem:db
-ez_db_jdbc_username=sa
-ez_db_jdbc_password=
+ds:                         # * 静态数据源列表
+  - code:                   # * 数据源编码
+    url:                    # * 数据源URL
+    username:               # * 数据源用户名
+    password:               # * 数据源密码
+    monitor:                #   是否启用连接监控，默认为false
+    pool:                   #   是否自定义连接池配置
+      initialSize:          #   初始连接数
+      maxActive:            #   最大连接数
+dynamicDS:                  #   动态配置
+  enabled:                  #   是否启用动态配置，默认为false
+  dsCode:                   #   动态配置关联的数据源编码
+  fetchSql:                 #   获取动态配置的SQL，默认为：select code,url,username,password,monitor,pool_initialSize,pool_maxActive from multi_ds
 ----
 
-Reload configuration when data source configuration changes :
-
-[source]
+[source,yml]
+.基础配置示例
 ----
-DS.reload()
-----
-
-Transaction support :
-
-[source]
-----
-DB db=new DB();
-db.open();
- //do something.
-db.commit();
-----
-
-Paging support :
-
-`Page&lt;Map&lt;String, Object&gt;&gt; page = db.find(&quot;&lt;SQL&gt;&quot;,&quot;&lt;param&gt;&quot;，&lt;page number, starting with 1&gt;, &lt;page size&gt;);`
-
-Java Object package support :
-
-`User user = db.getObject(&quot;select * from user where id= ? &quot;, new Object[]{1}, User.class);`
-
-Concurrent support :
-
-[source]
-----
-ConcurrentDB cdb = new ConcurrentDB(new DB());
-sqls.put("1", "select count(1) from test.xxx where area='江干'");
-sqls.put("2", "select count(1) from test.xxx where area='西湖'");
-sqls.put("3", "select count(1) from test.xxx where area='上城'");
-Map<String, Long> result = cdb.count(sqls);
+ds:
+  - code: defalut
+    url: jdbc:h2:mem:db
+    username: sa
+    password:
+    monitor: true
+    pool:
+      initialSize: 0
+      maxActive: 8
+dynamicDS:
+  enabled: true
+  dsCode: default
+  fetchSql: select code,url,username,password,monitor,pool_initialSize,pool_maxActive from multi_ds
 ----
 
-=== Building from source
+动态数据源使用需要先创建对应的配置表，创建脚本参考如下：
 
-The Project uses a http://maven.apache.org/[Maven]-based build system.
+[source,sql]
+----
+create table MULTI_DS
+(
+    CODE VARCHAR(255) not null
+    primary key,
+    URL VARCHAR(255),
+    USERNAME VARCHAR(255),
+    PASSWORD VARCHAR(255),
+    POOL_INITIALSIZE INT,
+    POOL_MAXACTIVE INT,
+    MONITOR INT
+);
+----
 
-=== Check out sources
+==== 初始化
 
-`git clone https://github.com/gudaoxuri/EZ-DBUtils.git`
+[source,java]
+----
+// 选择配置文件路径完成初始化
+DewDBUtils.init("<配置文件路径>");
+
+// 选择需要操作的数据库
+DewDB db = DewDBUtils.use("default");
+
+// 添加数据源（可选）
+DewDBUtils.addDS(...);
+
+// 删除数据源（可选）
+DewDBUtils.removeDS(...);
+----
+
+==== 使用
+
+[source,java]
+.可用的方法
+----
+/**
+ * 创建表.
+ *
+ * @param tableName    表名
+ * @param tableDesc    表说明
+ * @param fields       表字段（字段名 - 类型）
+ * @param fieldsDesc   字段说明
+ * @param indexFields  索引字段
+ * @param uniqueFields 唯一值字段
+ * @param pkField      主键字段
+ */
+void createTableIfNotExist(String tableName, String tableDesc,
+                                      Map<String, String> fields,
+                                      Map<String, String> fieldsDesc,
+                                      List<String> indexFields,
+                                      List<String> uniqueFields,
+                                      String pkField)
+
+/**
+ * DDL操作.
+ *
+ * @param ddl DDL语句
+ */
+void ddl(String ddl)
+
+/**
+ * 获取单条记录.
+ *
+ * @param tableName 表名
+ * @param pkField   主键字段
+ * @param pkValue   主键值
+ * @param clazz     对象类
+ * @param <E>       对象
+ * @return java对象
+ */
+<E> E get(String tableName, String pkField, Object pkValue, Class<E> clazz)
+
+/**
+ * 获取单个对象.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @param clazz  对象类
+ * @param <E>    对象
+ * @return java对象
+ */
+<E> E get(String sql, Class<E> clazz, Object... params)
+
+/**
+ * 获取多个对象.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @param clazz  对象类
+ * @param <E>    对象
+ * @return java对象
+ */
+<E> List<E> find(String sql, Class<E> clazz, Object... params)
+
+
+/**
+ * 获取多个对象（带分页）.
+ *
+ * @param sql        SQL
+ * @param params     参数
+ * @param pageNumber 页码（从1开始）
+ * @param pageSize   每页条数
+ * @param clazz      对象类
+ * @param <E>        对象
+ * @return 多个对象（带分页）
+ */
+<E> Page<E> page(String sql, long pageNumber, long pageSize, Class<E> clazz, Object... params)
+
+/**
+ * 判断记录是否存在.
+ *
+ * @param tableName 表名
+ * @param pkField   主键字段
+ * @param pkValue   主键值
+ * @return 是否存在
+ */
+boolean exits(String tableName, String pkField, Object pkValue)
+
+/**
+ * 判断记录是否存在.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 是否存在
+ */
+boolean exits(String sql, Object... params)
+
+/**
+ * 获取单条记录.
+ *
+ * @param tableName 表名
+ * @param pkField   主键字段
+ * @param pkValue   主键值
+ * @return 单条记录
+ */
+Map<String, Object> get(String tableName, String pkField, Object pkValue)
+
+/**
+ * 获取单条记录.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 单条记录
+ */
+Map<String, Object> get(String sql, Object... params)
+
+/**
+ * 获取多条记录.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 多条记录（带分页）
+ */
+List<Map<String, Object>> find(String sql, Object... params)
+
+/**
+ * 获取多条记录（带分页）.
+ *
+ * @param sql        SQL
+ * @param params     参数
+ * @param pageNumber 页码（从1开始）
+ * @param pageSize   每页条数
+ * @return 多条记录（带分页）
+ */
+Page<Map<String, Object>> page(String sql, int pageNumber, int pageSize, Object... params)
+
+/**
+ * 获取记录数.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 记录数
+ */
+long count(String sql, Object... params)
+
+/**
+ * 添加记录.
+ *
+ * @param tableName 表名
+ * @param values    值列表
+ * @return 影响行数
+ */
+int insert(String tableName, Map<String, Object> values)
+
+/**
+ * 修改记录.
+ *
+ * @param tableName 表名
+ * @param pkField   主键字段
+ * @param pkValue   主键值
+ * @param values    值列表
+ * @return 影响行数
+ */
+int modify(String tableName, String pkField, Object pkValue, Map<String, Object> values)
+
+/**
+ * 更新记录.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 影响行数
+ */
+int update(String sql, Object... params)
+
+/**
+ * 批量更新记录.
+ *
+ * @param sql    SQL
+ * @param params 参数
+ * @return 影响行数
+ */
+int[] batch(String sql, Object[][] params)
+
+/**
+ * 批量更新记录.
+ *
+ * @param sqls SQL
+ */
+void batch(Map<String, Object[]> sqls)
+
+/**
+ * 删除单条记录.
+ *
+ * @param tableName 表名
+ * @param pkField   主键字段
+ * @param pkValue   主键值
+ * @return 影响行数
+ */
+Integer delete(String tableName, String pkField, Object pkValue)
+
+/**
+ * 删除所有记录.
+ *
+ * @param tableName 表名
+ * @return 单条记录
+ */
+Integer deleteAll(String tableName)
+
+/**
+ * 获取Meta信息.
+ *
+ * @param tableName 表名
+ * @return Meta信息
+ */
+List<Meta> getMetaData(String tableName)
+
+/**
+ * 获取Meta信息.
+ *
+ * @param tableName 表名
+ * @param fieldName 指定的字段名
+ * @return Meta信息
+ */
+Meta getMetaData(String tableName, String fieldName)
+
+/**
+ * 打开事务.
+ */
+void open()
+
+/**
+ * 提交事务.
+ */
+void commit()
+
+/**
+ * 显式回滚事务.
+ * <p>
+ * 发生SQL错误时会自动回滚，但业务错误需要调用此方法手工回滚.
+ */
+void rollback()
+----
+
+[source,java]
+.使用示例
+----
+DewDBUtils.init(this.getClass().getResource("/").getPath() + File.separator + "config.yml");
+db = DewDBUtils.use("default");
+db.ddl("create table tuser(" +
+                "id int not null," +
+                "name varchar(255)," +
+                "password varchar(255)," +
+                "age int," +
+                "asset decimal," +
+                "enable boolean," +
+                "primary key(id)" +
+                ")");
+db.update("insert into tuser (id,name,password,age,asset,enable) values ( ? , ? , ? , ? , ? , ? )", 1, "张三", "123", 22, 2333.22, true);
+// get
+Assert.assertEquals(1, db.get("select * from tuser where id = ?", 1).get("id"));
+// count
+Assert.assertEquals(5, db.count("select * from tuser"));
+// find
+Assert.assertEquals(4, db.find("select * from tuser where age = ?", 22).size());
+// page
+Page<Map<String, Object>> pageResult = db.page("select * from tuser", 1, 2);
+Assert.assertEquals(5, pageResult.getRecordTotal());
+Assert.assertEquals(3, pageResult.getPageTotal());
+// get
+User user = db.get("select * from tuser where id = ? ", User.class, 1);
+Assert.assertEquals(1, user.getId());
+// find
+List<User> users = db.find("select * from tuser where age = ?", User.class, 22);
+Assert.assertEquals(4, users.size());
+----
 
 === License
 

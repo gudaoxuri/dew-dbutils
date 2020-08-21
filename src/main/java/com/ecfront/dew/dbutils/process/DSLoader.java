@@ -79,8 +79,10 @@ public class DSLoader {
 
     public static void removeDS(String dsCode) {
         log.info("[DewDBUtils]Remove DS {}", dsCode);
-        MULTI_DS.get(dsCode).setDataSource(null);
-        MULTI_DS.remove(dsCode);
+        if (MULTI_DS.containsKey(dsCode)) {
+            MULTI_DS.get(dsCode).setDataSource(null);
+            MULTI_DS.remove(dsCode);
+        }
     }
 
     private static void loadDS(List<DSConfig> dsConfigs) {

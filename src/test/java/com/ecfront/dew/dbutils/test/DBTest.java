@@ -85,8 +85,8 @@ public class DBTest {
         Map<String, Object> res = db.get("test", "id", 100);
         Assert.assertEquals("孤岛旭日", res.get("name"));
         Assert.assertEquals(29, res.get("age"));
-        Assert.assertEquals(1.1, res.get("height1"));
-        Assert.assertEquals(1.1, res.get("height2"));
+        Assert.assertEquals(1.1f, res.get("height1"));
+        Assert.assertEquals(1.1d, res.get("height2"));
         Assert.assertEquals("浙江杭州", res.get("addr"));
         Assert.assertEquals("浙江杭州", res.get("txt"));
         db.delete("test", "id", 100);

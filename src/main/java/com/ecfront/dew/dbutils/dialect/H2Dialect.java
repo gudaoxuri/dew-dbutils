@@ -66,7 +66,8 @@ class H2Dialect implements Dialect {
                     t = "BOOLEAN";
                     break;
                 case "float":
-                    t = "FLOAT";
+                    // https://www.h2database.com/html/faq.html?highlight=float&search=FLOAT#float_is_double
+                    t = "FLOAT(24)";
                     break;
                 case "double":
                     t = "DOUBLE";
