@@ -73,7 +73,7 @@ public class DewDB {
      * @param uniqueFields 唯一值字段
      * @param pkField      主键字段
      * @throws SQLException SQL错误
-     * @deprecated - 此功能存在一定限制，建议使用 {@link this#ddl(String)} 建表
+     * @deprecated - 此功能存在一定限制，建议使用 {@link #ddl(String)} 建表
      */
     @Deprecated
     public void createTableIfNotExist(String tableName, String tableDesc,
@@ -111,7 +111,7 @@ public class DewDB {
      * @return java对象
      * @throws SQLException SQL错误
      */
-    public <E> E get(String tableName, String pkField, Object pkValue, Class<E> clazz) throws SQLException {
+    public <E> E getByPk(String tableName, String pkField, Object pkValue, Class<E> clazz) throws SQLException {
         return get("SELECT * FROM " + tableName + " WHERE " + pkField + " = ?", clazz, pkValue);
     }
 
@@ -194,7 +194,7 @@ public class DewDB {
      * @return 单条记录
      * @throws SQLException SQL错误
      */
-    public Map<String, Object> get(String tableName, String pkField, Object pkValue) throws SQLException {
+    public Map<String, Object> getByPk(String tableName, String pkField, Object pkValue) throws SQLException {
         return get("SELECT * FROM " + tableName + " WHERE " + pkField + " = ?", pkValue);
     }
 

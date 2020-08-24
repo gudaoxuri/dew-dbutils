@@ -82,7 +82,7 @@ public class DBTest {
         db.insert("test", values);
         values.put("name", "孤岛旭日");
         db.modify("test", "id",100, values);
-        Map<String, Object> res = db.get("test", "id", 100);
+        Map<String, Object> res = db.getByPk("test", "id", 100);
         Assert.assertEquals("孤岛旭日", res.get("name"));
         Assert.assertEquals(29, res.get("age"));
         Assert.assertEquals(1.1f, res.get("height1"));
@@ -90,7 +90,7 @@ public class DBTest {
         Assert.assertEquals("浙江杭州", res.get("addr"));
         Assert.assertEquals("浙江杭州", res.get("txt"));
         db.delete("test", "id", 100);
-        Assert.assertNull(db.get("test", "id", 100));
+        Assert.assertNull(db.getByPk("test", "id", 100));
     }
 
     @Test
