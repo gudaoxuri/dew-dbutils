@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DBExecutor {
@@ -184,31 +185,19 @@ public class DBExecutor {
 
     public static int insert(String tableName, Map<String, Object> values,
                              Connection conn, boolean closeConnection, Dialect dialect) throws SQLException {
-        StringBuilder sb = new StringBuilder("INSERT INTO " + tableName + " ( ");
-        StringBuilder keys = new StringBuilder();
-        StringBuilder valueList = new StringBuilder();
-        List params = new ArrayList<>();
-        for (Map.Entry<String, Object> field : values.entrySet()) {
-            keys.append(field.getKey()).append(",");
-            valueList.append("?,");
-            params.add(field.getValue());
-        }
-        sb.append(keys.substring(0, keys.length() - 1)).append(") VALUES ( ")
-                .append(valueList.substring(0, valueList.length() - 1)).append(" )");
-        return update(sb.toString(), params.toArray(new Object[params.size()]), conn, closeConnection, dialect);
+        String fields = String.join(",", values.keySet());
+        String valueArgs = values.keySet().stream().map(f -> "?").collect(Collectors.joining(","));
+        String sql = "INSERT INTO " + tableName + " (" + fields + ") VALUES (" + valueArgs + ")";
+        return update(sql, values.values().toArray(), conn, closeConnection, dialect);
     }
 
     public static int modify(String tableName, String pkField, Object pkValue, Map<String, Object> values,
                              Connection conn, boolean closeConnection, Dialect dialect) throws SQLException {
-        StringBuilder sb = new StringBuilder("UPDATE " + tableName + " SET ");
-        List params = new ArrayList<>();
-        for (Map.Entry<String, Object> field : values.entrySet()) {
-            sb.append(field.getKey() + "= ? ,");
-            params.add(field.getValue());
-        }
+        String set = values.keySet().stream().map(k -> k + " = ?").collect(Collectors.joining(", "));
+        String sql = "UPDATE " + tableName + " SET " + set + " WHERE " + pkField + " = ? ";
+        List<Object> params = new ArrayList<>(values.values());
         params.add(pkValue);
-        return update(sb.substring(0, sb.length() - 1) + " WHERE " + pkField + " = ? ",
-                params.toArray(new Object[params.size()]), conn, closeConnection, dialect);
+        return update(sql, params.toArray(), conn, closeConnection, dialect);
     }
 
     public static int update(String sql, Object[] params, Connection conn, boolean isCloseConn, Dialect dialect) throws SQLException {

@@ -16,10 +16,11 @@
 
 package com.ecfront.dew.dbutils.test;
 
+import com.ecfront.dew.dbutils.DewDB;
 import com.ecfront.dew.dbutils.DewDBUtils;
 import com.ecfront.dew.dbutils.dto.Meta;
 import com.ecfront.dew.dbutils.dto.Page;
-import com.ecfront.dew.dbutils.DewDB;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,10 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -81,7 +80,7 @@ public class DBTest {
         values.put("txt", "浙江杭州");
         db.insert("test", values);
         values.put("name", "孤岛旭日");
-        db.modify("test", "id",100, values);
+        db.modify("test", "id", 100, values);
         Map<String, Object> res = db.getByPk("test", "id", 100);
         Assert.assertEquals("孤岛旭日", res.get("name"));
         Assert.assertEquals(29, res.get("age"));
@@ -204,6 +203,48 @@ public class DBTest {
         testDropTable(db);
     }
 
+    @Test
+    public void testDataType() throws Exception {
+        DewDB db = DewDBUtils.use("default");
+        db.ddl("create table datatype(" +
+                "id int not null," +
+                "name varchar(255)," +
+                "dt date," +
+                "dt2 datetime," +
+                "ts timestamp," +
+                "age int," +
+                "primary key(id)" +
+                ")");
+        Date now = new Date();
+        db.insert("datatype", new HashMap<String, Object>() {
+            {
+                put("id", 1);
+                put("name", "测试");
+                put("age", 1);
+                put("dt", now);
+                put("dt2", now);
+                put("ts", new Timestamp(now.getTime()));
+            }
+        });
+        List<DataTypeTest> result = db.find("select * from datatype", DataTypeTest.class);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(1L, result.get(0).getId().longValue());
+        Assert.assertEquals("测试", result.get(0).getName());
+        Assert.assertEquals(1, result.get(0).getAge().longValue());
+        Assert.assertEquals(now.getTime(), result.get(0).getTs().getTime());
+        Assert.assertEquals(now.getDay(), result.get(0).getDt().getDay());
+        Assert.assertEquals(now.getTime(), result.get(0).getDt2().getTime());
+    }
+
+    @Data
+    public static class DataTypeTest {
+        private Long id;
+        private String name;
+        private Date dt;
+        private Date dt2;
+        private Timestamp ts;
+        private Long age;
+    }
 
     private void testCreateTable(DewDB db) throws SQLException {
         db.ddl("create table tuser(" +
