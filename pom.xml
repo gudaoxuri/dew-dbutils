@@ -59,14 +59,14 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
         <commons-dbutils.version>1.7</commons-dbutils.version>
-        <druid.version>1.1.23</druid.version>
-        <mysql.version>8.0.21</mysql.version>
-        <postgresql.version>42.2.14</postgresql.version>
+        <druid.version>1.2.8</druid.version>
+        <mysql.version>8.0.28</mysql.version>
+        <postgresql.version>42.3.1</postgresql.version>
         <h2.version>2.1.210</h2.version>
-        <snakeyaml.version>1.26</snakeyaml.version>
-        <lombok.version>1.18.12</lombok.version>
-        <junit.version>4.13.1</junit.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <snakeyaml.version>1.30</snakeyaml.version>
+        <lombok.version>1.18.22</lombok.version>
+        <junit.version>4.13.2</junit.version>
+        <slf4j.version>1.7.35</slf4j.version>
     </properties>
 
     <dependencies>
