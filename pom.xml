@@ -61,7 +61,7 @@
         <commons-dbutils.version>1.7</commons-dbutils.version>
         <druid.version>1.2.8</druid.version>
         <mysql.version>8.0.28</mysql.version>
-        <postgresql.version>42.3.1</postgresql.version>
+        <postgresql.version>42.3.2</postgresql.version>
         <h2.version>2.1.210</h2.version>
         <snakeyaml.version>1.30</snakeyaml.version>
         <lombok.version>1.18.22</lombok.version>
